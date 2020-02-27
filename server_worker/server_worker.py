@@ -22,8 +22,8 @@ class OmnisciServerWorker:
         self._command_2_import_CSV = "COPY %s FROM '%s' WITH (header='%s');"
         self._conn = None
 
-    def _read_csv_datafile(self, file_name, columns_names, columns_types=None, header=None,
-                           compression_type='gzip', nrows=None):
+    def _read_csv_datafile(self, file_name, columns_names, compression_type, columns_types=None, header=None,
+                           nrows=None):
         "Read csv by Pandas. Function returns Pandas DataFrame,\
         which can be used by ibis load_data function"
 
@@ -31,10 +31,11 @@ class OmnisciServerWorker:
         types = None
         if columns_types:
             types = {columns_names[i]: columns_types[i] for i in range(len(columns_names))}
+            
         if compression_type == 'gzip':
             with gzip.open(file_name) as f:
                 return pd.read_csv(f, names=columns_names, dtype=types, nrows=nrows, header=header)
-        return pd.read_csv(file_name, compression=compression_type, names=columns_names,
+        return pd.read_csv(file_name, compression=None, names=columns_names,
                            dtype=types,
                            nrows=nrows, header=header)
 
@@ -116,6 +117,7 @@ class OmnisciServerWorker:
                             columns_types, cast_dict=None, header=None, nrows=None):
         "Import CSV files using Ibis load_data to the OmniSciDB from the Pandas.DataFrame"
 
+        compression_type = None
         if columns_types:
             columns_types_pd = convertTypeIbis2Pandas(columns_types)
         t0 = time.time()
@@ -123,15 +125,19 @@ class OmnisciServerWorker:
             pandas_df_from_each_file = (
                 self._read_csv_datafile(file_name, columns_names=columns_names,
                                         columns_types=columns_types_pd,
-                                        header=header, nrows=nrows)
+                                        header=header, compression_type=compression_type, 
+                                        nrows=nrows)
                 for file_name in data_files_names[:files_limit])
             self._imported_pd_df[table_name] = pd.concat(pandas_df_from_each_file,
                                                          ignore_index=True)
         else:
+            if data_files_names.endswith('.gz'):
+                compression_type = 'gzip'
             self._imported_pd_df[table_name] = self._read_csv_datafile(data_files_names,
                                                                        columns_names=columns_names,
                                                                        columns_types=columns_types_pd,
-                                                                       header=header, nrows=nrows)
+                                                                       header=header, compression_type=compression_type, 
+                                                                       nrows=nrows)
         t_import_pandas = time.time() - t0
         if cast_dict is not None:
             pandas_concatenated_df_casted = self._imported_pd_df[table_name].astype(dtype=cast_dict,
