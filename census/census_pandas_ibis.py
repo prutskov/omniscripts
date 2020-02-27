@@ -5,7 +5,7 @@ import argparse
 import warnings
 import time
 import gzip
-import mysql.connector
+#import mysql.connector
 from timeit import default_timer as timer
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -171,7 +171,7 @@ def etl_ibis(
     import ibis
 
     time.sleep(2)
-    conn = omnisci_server_worker.connect_to_server()
+    omnisci_server_worker.connect_to_server()
 
     omnisci_server_worker.create_database(
         database_name, delete_if_exists=delete_old_database
@@ -179,7 +179,7 @@ def etl_ibis(
 
     t0 = timer()
 
-    conn = omnisci_server_worker.connect_to_server()
+    omnisci_server_worker.connect_to_server()
     # Create table and import data
     if create_new_table:
         # Datafiles import
@@ -195,71 +195,54 @@ def etl_ibis(
 
     etl_times["t_readcsv"] = t_import_pandas + t_import_ibis
 
-    db = conn.database(database_name)
+    # Second connection - this is ibis's ipc connection for DML
+    conn_ipc = omnisci_server_worker.ipc_connect_to_server()
+    db = conn_ipc.database(database_name)
     table = db.table(table_name)
 
     t_etl_start = timer()
+
+    keep_cols = [
+        'YEAR0',
+        'DATANUM',
+        'SERIAL',
+        'CBSERIAL',
+        'HHWT',
+        'CPI99',
+        'GQ',
+        'PERNUM',
+        'SEX',
+        'AGE',
+        'INCTOT',
+        'EDUC',
+        'EDUCD',
+        'EDUC_HEAD',
+        'EDUC_POP',
+        'EDUC_MOM',
+        'EDUCD_MOM2',
+        'EDUCD_POP2',
+        'INCTOT_MOM',
+        'INCTOT_POP',
+        'INCTOT_MOM2',
+        'INCTOT_POP2',
+        'INCTOT_HEAD',
+        'SEX_HEAD',
+    ]
+    table = table[keep_cols]
+    etl_times["t_drop"] += timer() - t_etl_start    
+
+    # first, we do all filters and eliminate redundant fillna operations for EDUC and EDUCD
+    t0 = timer()
     table = table[table.INCTOT != 9999999]
-    etl_times["t_where"] += timer() - t_etl_start
+    table = table[table['EDUC'].notnull()]
+    table = table[table['EDUCD'].notnull()]      
+    etl_times["t_where"] += timer() - t0
 
     t0 = timer()
     table = table.set_column("INCTOT", table["INCTOT"] * table["CPI99"])
     etl_times["t_arithm"] += timer() - t0
-
-    suspect = [
-        "CBSERIAL",
-        "EDUC",
-        "EDUCD",
-        "EDUC_HEAD",
-        "EDUC_POP",
-        "EDUC_MOM",
-        "EDUCD_MOM2",
-        "EDUCD_POP2",
-        "INCTOT_MOM",
-        "INCTOT_POP",
-        "INCTOT_MOM2",
-        "INCTOT_POP2",
-        "INCTOT_HEAD",
-    ]
-    for column in suspect:
-        t0 = timer()
-        table = table.set_column(column, table[column].fillna(-1))
-        etl_times["t_fillna"] += timer() - t0
-
-    t0 = timer()
-    table = table[table.EDUC != -1]
-    table = table[table.EDUCD != -1]
-    etl_times["t_where"] += timer() - t0
-
-    keep_cols = [
-        "YEAR0",
-        "DATANUM",
-        "SERIAL",
-        "CBSERIAL",
-        "HHWT",
-        "GQ",
-        "PERNUM",
-        "SEX",
-        "AGE",
-        "INCTOT",
-        "EDUC",
-        "EDUCD",
-        "EDUC_HEAD",
-        "EDUC_POP",
-        "EDUC_MOM",
-        "EDUCD_MOM2",
-        "EDUCD_POP2",
-        "INCTOT_MOM",
-        "INCTOT_POP",
-        "INCTOT_MOM2",
-        "INCTOT_POP2",
-        "INCTOT_HEAD",
-        "SEX_HEAD",
-    ]
-    t0 = timer()
-    table = table[keep_cols]
-    etl_times["t_drop"] += timer() - t0
-
+ 
+    # final fillna and casting for necessary columns
     for column in keep_cols:
         t0 = timer()
         table = table.set_column(column, table[column].fillna(-1))
@@ -269,10 +252,14 @@ def etl_ibis(
         table = table.set_column(column, table[column].cast("float64"))
         etl_times["t_typeconvert"] += timer() - t0
 
-    y = table["EDUC"].execute()
+    df = table.execute()
+
+    # here we use pandas to split table
+    y = df['EDUC']
     t0 = timer()
-    X = table.drop(["EDUC"]).execute()
-    etl_times["t_drop"] += timer() - t0
+    X = df.drop(['EDUC'], axis=1)
+    etl_times['t_drop'] += timer() - t0
+
 
     etl_times["t_etl"] = timer() - t_etl_start
     print("DataFrame shape:", y.shape)
