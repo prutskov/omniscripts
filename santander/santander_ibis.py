@@ -322,8 +322,8 @@ try:
     omnisci_server_worker = OmnisciServerWorker(omnisci_server)
 
     time.sleep(2)
-    conn = omnisci_server_worker.connect_to_server()
     conn_ipc = omnisci_server_worker.ipc_connect_to_server()
+    conn = omnisci_server_worker.connect_to_server()
 
 
     db_reporter = None
@@ -392,24 +392,24 @@ try:
 #    train_pd = pd.read_csv(str(args.dp))
 #    t_pandas_import = time.time() - t0
     
- #   print("t_import_pandas", t_pandas_import)
+#    print("t_import_pandas", t_pandas_import)
 
-  #  t0 = time.time()
- #   for i in range(200):
- #       col = 'var_%d' % i
- #       var_count = train_pd.groupby(col).agg({col: 'count'})
- #       var_count.columns = ['%s_count' % col]
- #       var_count = var_count.reset_index()
- #       train_pd = train_pd.merge(var_count, on=col, how='left')
+#    t0 = time.time()
+#    for i in range(200):
+#        col = 'var_%d' % i
+#        var_count = train_pd.groupby(col).agg({col: 'count'})
+#        var_count.columns = ['%s_count' % col]
+#        var_count = var_count.reset_index()
+#        train_pd = train_pd.merge(var_count, on=col, how='left')
 
- #   for i in range(200):
- #       col = 'var_%d' % i
- #       mask = train_pd['%s_count' % col] > 1
- #       train_pd.loc[mask, '%s_gt1' % col] = train_pd.loc[mask, col]
+#    for i in range(200):
+#        col = 'var_%d' % i
+#        mask = train_pd['%s_count' % col] > 1
+#        train_pd.loc[mask, '%s_gt1' % col] = train_pd.loc[mask, col]
         
- #   tmp1, tmp2 = train_pd[:-10000],train_pd[-10000:]        
- #   t_pandas_etl = time.time() - t0
- #   print("t_pandas_etl", t_pandas_etl)
+#    tmp1, tmp2 = train_pd[:-10000],train_pd[-10000:]        
+#    t_pandas_etl = time.time() - t0
+#    print("t_pandas_etl", t_pandas_etl)
 
     try:
 

@@ -245,7 +245,9 @@ def etl_ibis(
     # final fillna and casting for necessary columns
     for column in keep_cols:
         t0 = timer()
-        table = table.set_column(column, table[column].fillna(-1))
+        #table = table.set_column(column, table[column].fillna(-1))
+        expr = ibis.case().when(table[column].notnull(),table[column]).else_(-1).end()
+        table = table.set_column(column, expr)
         etl_times["t_fillna"] += timer() - t0
 
         t0 = timer()
@@ -253,7 +255,7 @@ def etl_ibis(
         etl_times["t_typeconvert"] += timer() - t0
 
     df = table.execute()
-
+    etl_times["t_etl"] = timer() - t_etl_start
     # here we use pandas to split table
     y = df['EDUC']
     t0 = timer()
@@ -261,7 +263,7 @@ def etl_ibis(
     etl_times['t_drop'] += timer() - t0
 
 
-    etl_times["t_etl"] = timer() - t_etl_start
+    #etl_times["t_etl"] = timer() - t_etl_start
     print("DataFrame shape:", y.shape)
 
     # ibis_df = table.execute()
