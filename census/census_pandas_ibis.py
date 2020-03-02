@@ -246,13 +246,9 @@ def etl_ibis(
     for column in keep_cols:
         t0 = timer()
         #table = table.set_column(column, table[column].fillna(-1))
-        expr = ibis.case().when(table[column].notnull(),table[column]).else_(-1).end()
+        expr = ibis.case().when(table[column].notnull(),table[column]).else_(-1).end().cast("float64")
         table = table.set_column(column, expr)
         etl_times["t_fillna"] += timer() - t0
-
-        t0 = timer()
-        table = table.set_column(column, table[column].cast("float64"))
-        etl_times["t_typeconvert"] += timer() - t0
 
     df = table.execute()
     etl_times["t_etl"] = timer() - t_etl_start
