@@ -66,6 +66,8 @@ def etl():
     global validation_part
     cur_table = df
     
+    t0 = time.time()
+
     # We are making 400 columns and then insert them into original table thus avoiding nested sql requests
     count_cols = []
     orig_cols = ["ID_code"]
@@ -87,7 +89,6 @@ def etl():
     cur_table = cur_table.mutate(cast_cols)
 
 
-    t0 = time.time()
     frame = cur_table.execute()
     t_groupby_merge_where = time.time() - t0
     
@@ -355,7 +356,7 @@ try:
         except Exception as err:
             print("Failed to delete", database_name, "old database: ", err)
 
-    print("Creating new database")
+    print("Creating new database", database_name)
     try:
         conn.create_database(database_name)  # Ibis list_databases method is not supported yet
     except Exception as err:
@@ -388,28 +389,28 @@ try:
         print("Failed to access", train_table_name, "table:", err)
 
 #    pandas part - should be outlined in separate routine
-#    t0 = time.time()
-#    train_pd = pd.read_csv(str(args.dp))
-#    t_pandas_import = time.time() - t0
+    #t0 = time.time()
+    #train_pd = pd.read_csv(str(args.dp))
+    #t_pandas_import = time.time() - t0
     
-#    print("t_import_pandas", t_pandas_import)
+    #print("t_import_pandas", t_pandas_import)
 
-#    t0 = time.time()
-#    for i in range(200):
-#        col = 'var_%d' % i
-#        var_count = train_pd.groupby(col).agg({col: 'count'})
-#        var_count.columns = ['%s_count' % col]
-#        var_count = var_count.reset_index()
-#        train_pd = train_pd.merge(var_count, on=col, how='left')
+    #t0 = time.time()
+    #for i in range(200):
+    #    col = 'var_%d' % i
+    #    var_count = train_pd.groupby(col).agg({col: 'count'})
+    #    var_count.columns = ['%s_count' % col]
+    #    var_count = var_count.reset_index()
+    #    train_pd = train_pd.merge(var_count, on=col, how='left')
 
-#    for i in range(200):
-#        col = 'var_%d' % i
-#        mask = train_pd['%s_count' % col] > 1
-#        train_pd.loc[mask, '%s_gt1' % col] = train_pd.loc[mask, col]
+    #for i in range(200):
+    #    col = 'var_%d' % i
+    #    mask = train_pd['%s_count' % col] > 1
+    #    train_pd.loc[mask, '%s_gt1' % col] = train_pd.loc[mask, col]
         
-#    tmp1, tmp2 = train_pd[:-10000],train_pd[-10000:]        
-#    t_pandas_etl = time.time() - t0
-#    print("t_pandas_etl", t_pandas_etl)
+    #tmp1, tmp2 = train_pd[:-10000],train_pd[-10000:]        
+    #t_pandas_etl = time.time() - t0
+    #print("t_pandas_etl", t_pandas_etl)
 
     try:
 

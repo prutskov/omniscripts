@@ -47,6 +47,83 @@ def load_data(
             f, names=columns_names, nrows=nrows, header=header, dtype=types
         )
 
+def etl_pandas_modified(filename, columns_names, columns_types):
+    etl_times = {
+        "t_readcsv": 0.0,
+        "t_where": 0.0,
+        "t_arithm": 0.0,
+        "t_fillna": 0.0,
+        "t_drop": 0.0,
+        "t_typeconvert": 0.0,
+        "t_etl": 0.0,
+    }
+
+    t0 = timer()
+    df = load_data(filename=filename, columns_names=columns_names, columns_types=columns_types,
+                   header=0, nrows=None, use_gzip=filename.endswith(".gz"))
+    etl_times["t_readcsv"] = timer() - t0
+
+    t_etl_start = timer()
+
+    keep_cols = [
+        "YEAR0",
+        "DATANUM",
+        "SERIAL",
+        "CBSERIAL",
+        "HHWT",
+        'CPI99',
+        "GQ",
+        "PERNUM",
+        "SEX",
+        "AGE",
+        "INCTOT",
+        "EDUC",
+        "EDUCD",
+        "EDUC_HEAD",
+        "EDUC_POP",
+        "EDUC_MOM",
+        "EDUCD_MOM2",
+        "EDUCD_POP2",
+        "INCTOT_MOM",
+        "INCTOT_POP",
+        "INCTOT_MOM2",
+        "INCTOT_POP2",
+        "INCTOT_HEAD",
+        "SEX_HEAD",
+    ]
+    t0 = timer()
+    df = df[keep_cols]
+    etl_times["t_drop"] += timer() - t0
+
+    t0 = timer()
+    df = df.query("INCTOT != 9999999")
+    df = df.query("EDUC != -1")
+    df = df.query("EDUCD != -1")
+    etl_times["t_where"] += timer() - t0
+
+    t0 = timer()
+    df["INCTOT"] = df["INCTOT"] * df["CPI99"]
+    etl_times["t_arithm"] += timer() - t0
+
+    for column in keep_cols:
+        t0 = timer()
+        df[column] = df[column].fillna(-1)
+        etl_times["t_fillna"] += timer() - t0
+
+        t0 = timer()
+        df[column] = df[column].astype("float64")
+        etl_times["t_typeconvert"] += timer() - t0
+
+    etl_times["t_etl"] = timer() - t_etl_start
+
+    y = df["EDUC"]
+    t0 = timer()
+    X = df.drop(columns=["EDUC"])
+    etl_times["t_drop"] += timer() - t0
+
+    print("DataFrame shape:", df.shape)
+
+    return X, y, etl_times
 
 def etl_pandas(filename, columns_names, columns_types):
     etl_times = {
@@ -248,7 +325,7 @@ def etl_ibis(
         #table = table.set_column(column, table[column].fillna(-1))
         expr = ibis.case().when(table[column].notnull(),table[column]).else_(-1).end().cast("float64")
         table = table.set_column(column, expr)
-        etl_times["t_fillna"] += timer() - t0
+        #etl_times["t_fillna"] += timer() - t0
 
     df = table.execute()
     etl_times["t_etl"] = timer() - t_etl_start
