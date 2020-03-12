@@ -115,9 +115,9 @@ def etl_pandas_modified(filename, columns_names, columns_types):
         etl_times["t_typeconvert"] += timer() - t0
 
     etl_times["t_etl"] = timer() - t_etl_start
-
-    y = df["EDUC"]
+ 
     t0 = timer()
+    y = df["EDUC"]
     X = df.drop(columns=["EDUC"])
     etl_times["t_drop"] += timer() - t0
 
@@ -240,6 +240,7 @@ def etl_ibis(
         "t_where": 0.0,
         "t_arithm": 0.0,
         "t_fillna": 0.0,
+        "t_pandas_drop": 0.0,
         "t_drop": 0.0,
         "t_typeconvert": 0.0,
         "t_etl": 0.0,
@@ -318,22 +319,24 @@ def etl_ibis(
     t0 = timer()
     table = table.set_column("INCTOT", table["INCTOT"] * table["CPI99"])
     etl_times["t_arithm"] += timer() - t0
- 
+
+  
+    cols = []
     # final fillna and casting for necessary columns
     for column in keep_cols:
         t0 = timer()
-        #table = table.set_column(column, table[column].fillna(-1))
-        expr = ibis.case().when(table[column].notnull(),table[column]).else_(-1).end().cast("float64")
-        table = table.set_column(column, expr)
-        #etl_times["t_fillna"] += timer() - t0
+        cols.append(ibis.case().when(table[column].notnull(),table[column]).else_(-1).end().cast("float64").name(column))
+        etl_times["t_fillna"] += timer() - t0
+
+    table = table.mutate(cols)
 
     df = table.execute()
     etl_times["t_etl"] = timer() - t_etl_start
     # here we use pandas to split table
-    y = df['EDUC']
     t0 = timer()
+    y = df['EDUC']
     X = df.drop(['EDUC'], axis=1)
-    etl_times['t_drop'] += timer() - t0
+    etl_times['t_pandas_drop'] = timer() - t0
 
 
     #etl_times["t_etl"] = timer() - t_etl_start
@@ -381,13 +384,15 @@ def ml(X, y, random_state, n_runs, train_size, optimizer):
     clf = lm.Ridge()
 
     mse_values, cod_values = [], []
-    ml_times = {"t_ML": 0.0, "t_train": 0.0, "t_inference": 0.0}
+    ml_times = {"t_split":0.0, "t_ML": 0.0, "t_train": 0.0, "t_inference": 0.0}
 
     print("ML runs: ", n_runs)
     for i in range(n_runs):
+        t0 = timer()
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, train_size=train_size, random_state=random_state
         )
+        ml_times["t_split"] += timer() - t0
         random_state += 777
 
         t0 = timer()
@@ -727,7 +732,7 @@ def main():
 
         import_pandas_into_module_namespace(main.__globals__,
                                             args.pandas_mode, args.ray_tmpdir, args.ray_memory)
-        X, y, etl_times = etl_pandas(
+        X, y, etl_times = etl_pandas_modified(
             args.file, columns_names=columns_names, columns_types=columns_types
         )
         print_times(etl_times, name=args.pandas_mode)

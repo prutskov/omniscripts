@@ -93,8 +93,14 @@ def etl():
     t_groupby_merge_where = time.time() - t0
     
     print("t_groupby_merge_where", t_groupby_merge_where)
-    
+
+
+    t0 = time.time()
+
     training_part, validation_part = frame[:-10000],frame[-10000:] 
+
+    t_split_time = time.time() - t0
+    print("t_split_time", t_split_time)
 
     return t_groupby_merge_where
 
