@@ -309,38 +309,42 @@ def etl_ibis(args, run_import_queries, columns_names, columns_types, validation=
         sys.exit(0)
 
     db = conn.database(database_name)
-    table = db.table(table_name)
+    table_orig = db.table(table_name)
+
 
     # group_by/count, merge (join) and filtration queries
     # We are making 400 columns and then insert them into original table thus avoiding
     # nested sql requests
     t0 = timer()
+    table = table_orig
     count_cols = []
-    orig_cols = ["ID_code", "target"] + ['var_%s'%i for i in range(200)]
+    orig_cols = ["ID_code"]
     cast_cols = []
-    cast_cols.append(table["target"].cast("int64").name("target0"))
     gt1_cols = []
+
     for i in range(200):
         col = "var_%d" % i
         col_count = "var_%d_count" % i
-        col_gt1 = "var_%d_gt1" % i
         w = ibis.window(group_by=col)
         count_cols.append(table[col].count().over(w).name(col_count))
-        gt1_cols.append(
+        count_cols.append(
             ibis.case()
             .when(
                 table[col].count().over(w).name(col_count) > 1,
-                table[col].cast("float32"),
-            )
+                table[col].cast("float32"))
             .else_(ibis.null())
             .end()
             .name("var_%d_gt1" % i)
         )
         cast_cols.append(table[col].cast("float32").name(col))
 
+    for i in range(200):
+       col = 'var_%d' % i
+       orig_cols.append(col)
+
+
     table = table.mutate(count_cols)
     table = table.drop(orig_cols)
-    table = table.mutate(gt1_cols)
     table = table.mutate(cast_cols)
 
     table_df = table.execute()
@@ -353,10 +357,10 @@ def etl_ibis(args, run_import_queries, columns_names, columns_types, validation=
     
     etl_times["t_etl"] = etl_times["t_groupby_merge_where"] + etl_times["t_train_test_split"]
     
-    x_train = training_part.drop(['target0'],axis=1)
-    y_train = training_part['target0']
-    x_valid = validation_part.drop(['target0'],axis=1)
-    y_valid = validation_part['target0']
+    x_train = training_part.drop(['target'],axis=1)
+    y_train = training_part['target']
+    x_valid = validation_part.drop(['target'],axis=1)
+    y_valid = validation_part['target']
     
     omnisci_server.terminate()
     omnisci_server = None
@@ -748,7 +752,7 @@ def main():
     gt1_cols = ["var_%s_gt1" % i for i in range(200)]
     columns_names = ["ID_code", "target"] + var_cols
     columns_types_pd = ["object", "int64"] + ["float64" for _ in range(200)]
-    columns_types_ibis = ["string", "int32"] + ["decimal(8, 4)" for _ in range(200)]
+    columns_types_ibis = ["string", "int64"] + ["decimal(8, 4)" for _ in range(200)]
     columns_types_ibis_val = ["string", "string"] + ["string" for _ in range(200)]
     columns_types_pd_val = ["object", "object"] + ["object" for _ in range(200)]
 
@@ -856,7 +860,7 @@ def main():
             compare_result3 = compare_dataframes(ibis_df=[etl_ibis_res[gt1_cols]],
                                                  pandas_df=[etl_pandas_res[gt1_cols]])
             print("Validating queries results (target column) ...")
-            compare_result4 = compare_dataframes(ibis_df=[etl_ibis_res['target0']],
+            compare_result4 = compare_dataframes(ibis_df=[etl_ibis_res['target']],
                                                  pandas_df=[etl_pandas_res['target']])
 
             if not args.no_ml:

@@ -112,6 +112,8 @@ def etl_pandas(filename, columns_names, columns_types):
         df[column] = df[column].astype("float64")
         etl_times["t_typeconvert"] += timer() - t0
 
+
+    etl_times["t_real_etl"] = timer() - t_etl_start
     t0 = timer()
     y = df["EDUC"]
     X = df.drop(columns=["EDUC", "CPI99"])
@@ -157,11 +159,11 @@ def etl_ibis(
 
     t0 = timer()
 
-    omnisci_server_worker.connect_to_server()
+    conn = omnisci_server_worker.connect_to_server()
     # Create table and import data
     if create_new_table:
         # Datafiles import
-        t_import_pandas, t_import_ibis = omnisci_server_worker.import_data_by_ibis(
+        """t_import_pandas, t_import_ibis = omnisci_server_worker.import_data_by_ibis(
             table_name=table_name,
             data_files_names=filename,
             files_limit=1,
@@ -171,9 +173,22 @@ def etl_ibis(
             nrows=None,
             compression_type=None,
             validation=validation,
+        )"""
+        schema_table_import = ibis.Schema(
+            names=columns_names, types=columns_types
         )
+        conn.create_table(
+            table_name=table_name,
+            schema=schema_table_import,
+            database=database_name,
+            fragment_size=10000000,
+        )
+        table_import_query = conn.database(database_name).table(table_name)
+        t0 = timer()
+        table_import_query.read_csv(filename, delimiter=",")
+        etl_times["t_readcsv"] = timer() - t0
 
-    etl_times["t_readcsv"] = t_import_pandas + t_import_ibis
+    #etl_times["t_readcsv"] = t_import_pandas + t_import_ibis
 
     # Second connection - this is ibis's ipc connection for DML
     conn_ipc = omnisci_server_worker.ipc_connect_to_server()

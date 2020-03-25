@@ -28,7 +28,7 @@ class OmnisciServer:
         max_session_duration=86400,
         idle_session_duration=120,
         debug_timer=False,
-        columnar_output=True,
+        columnar_output=None,
         lazy_fetch=None,
     ):  # default values of max_session_duration=43200 idle_session_duration=60
         self.omnisci_executable = omnisci_executable
@@ -87,6 +87,8 @@ class OmnisciServer:
             "omnisci.conf",
             "--enable-watchdog=false",
             "--allow-cpu-retry",
+            "--enable-debug-timer",
+            "--enable-columnar-output=true",
             "--max-session-duration",
             str(self._max_session_duration),
             "--idle-session-duration",
