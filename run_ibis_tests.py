@@ -472,8 +472,6 @@ def main():
                 except KeyError:
                     pass
 
-            print(benchmark_cmd)
-
             conda_env.run(benchmark_cmd)
 
     except Exception:
