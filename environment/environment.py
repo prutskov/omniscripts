@@ -80,7 +80,6 @@ class CondaEnvironment:
             print("PRINTING LIST OF PACKAGES")
             execute_process(cmd_print_list, print_output=True, by_chunk=True)
 
-        print("CMD: ", " ".join(cmdline))
         execute_process(
             self._add_full_conda_execution(cmdline, env_name),
             cwd=cwd,
