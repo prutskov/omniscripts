@@ -71,7 +71,7 @@ class OmnisciServer:
             self._initdb_executable = os.path.join(
                 pathlib.Path(self.omnisci_executable).parent, "initdb"
             )
-            execute_process([self._initdb_executable, "-f", "--data", self._data_dir])
+            execute_process([self._initdb_executable, "-f", "--data", self._data_dir], print_output=True, by_chunk=True)
 
         self.omnisci_sql_executable = os.path.join(
             pathlib.Path(self.omnisci_executable).parent, "omnisql"
@@ -111,8 +111,8 @@ class OmnisciServer:
         "Launch OmniSciDB server"
 
         print("Launching server ...")
-        self.server_process, _ = execute_process(
-            self._server_start_cmdline, cwd=self._server_cwd, daemon=True
+        self.server_process = create_process(
+            self._server_start_cmdline, cwd=self._server_cwd
         )
         print("Server is launched")
         try:

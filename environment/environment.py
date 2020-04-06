@@ -21,7 +21,7 @@ class CondaEnvironment:
     def is_env_exist(self, name=None):
         env_name = name if name else self.name
         envs_list_cmdline = ["conda", "env", "list"]
-        _, output = execute_process(envs_list_cmdline)
+        output = execute_process(envs_list_cmdline, print_output=True, by_chunk=True)
         envs = re.findall(r"[^\s]+", output)
         if env_name in envs:
             return True
@@ -31,7 +31,7 @@ class CondaEnvironment:
         env_name = name if name else self.name
         print("REMOVING CONDA ENVIRONMENT")
         remove_env_cmdline = ["conda", "env", "remove", "--name", env_name]
-        execute_process(remove_env_cmdline)
+        execute_process(remove_env_cmdline, print_output=True, by_chunk=True)
         # TODO: replace with run_command
         # run_command(Commands.REMOVE, self._add_conda_execution([], env_name),
         #             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -78,23 +78,12 @@ class CondaEnvironment:
         if print_output:
             cmd_print_list = ["conda", "list", "-n", env_name]
             print("PRINTING LIST OF PACKAGES")
-            execute_process(cmd_print_list, print_output=True)
+            execute_process(cmd_print_list, print_output=True, by_chunk=True)
 
-        if cwd:
-            # run_command doesn't have cwd
-            execute_process(
-                self._add_full_conda_execution(cmdline, env_name),
-                cwd=cwd,
-                print_output=print_output,
-            )
-        else:
-            print("CMD: ", " ".join(cmdline))
-            _, _, return_code = run_command(
-                Commands.RUN,
-                self._add_conda_execution(cmdline, env_name),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                use_exception_handler=True,
-            )
-            if return_code != 0:
-                raise Exception(f"Conda run returned {return_code}.")
+        print("CMD: ", " ".join(cmdline))
+        execute_process(
+            self._add_full_conda_execution(cmdline, env_name),
+            cwd=cwd,
+            print_output=print_output,
+            by_chunk=True,
+        )

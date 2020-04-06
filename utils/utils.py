@@ -1,4 +1,5 @@
 import argparse
+import io
 import glob
 import os
 import re
@@ -27,29 +28,38 @@ def combinate_requirements(ibis, ci, res):
         hiyapyco.dump(merged_yaml, stream=f_res)
 
 
-def execute_process(cmdline, cwd=None, shell=False, daemon=False, print_output=True):
-    "Execute cmdline in user-defined directory by creating separated process"
-    try:
-        print("CMD: ", " ".join(cmdline))
-        output = ""
-        process = subprocess.Popen(
-            cmdline,
-            cwd=cwd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            shell=shell,
-        )
-        if not daemon:
-            output = process.communicate()[0].strip().decode()
-            if re.findall(r"\d fail", output) or re.findall(r"[e,E]rror", output):
-                process.returncode = 1
-            elif print_output:
-                print(output)
-        if process.returncode != 0 and process.returncode is not None:
-            raise Exception(f"Command returned {process.returncode}. \n{output}")
-        return process, output
-    except OSError as err:
-        print("Failed to start", cmdline, err)
+def create_process(cmdline, cwd=None, shell=False):
+    print("CMD: ", " ".join(cmdline))
+    process = subprocess.Popen(
+        cmdline,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=shell,
+    )
+    return process
+
+
+def execute_process(cmdline, cwd=None, shell=False, print_output=True, by_chunk=False, prefix=""):
+    process = create_process(cmdline, cwd, shell)
+
+    output = ""
+    if print_output and by_chunk:
+        lines = []
+        for line in io.TextIOWrapper(process.stdout, encoding="utf-8"):
+            print(f"{prefix} {line}")
+            lines.append(line)
+        output = "\n".join(lines)
+    elif print_output:
+        output = process.communicate()[0].strip().decode()
+        print(output)
+
+    if re.findall(r"\d fail", output) or re.findall(r"[e,E]rror", output):
+        process.returncode = 1
+    if process.returncode is not None and process.returncode != 0:
+        raise Exception(f"Command returned {process.returncode}.")
+
+    return output
 
 
 def convert_type_ibis2pandas(types):
