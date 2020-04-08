@@ -210,7 +210,7 @@ def main():
         type=str_arg_to_bool,
         help="Table name name to use in omniscidb server.",
     )
-    omnisci.add_argument(
+    optional.add_argument(
         "-omnisci_run_kwargs",
         dest="omnisci_run_kwargs",
         default={},
