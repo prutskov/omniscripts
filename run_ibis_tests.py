@@ -458,7 +458,14 @@ def main():
                             if type(arg_value) != dict:
                                 benchmark_cmd.extend([arg_name, str(arg_value)])
                             else:
-                                benchmark_cmd.extend([arg_name, ",".join(f"{key}={value}" for key, value in arg_value.items())])
+                                benchmark_cmd.extend(
+                                    [
+                                        arg_name,
+                                        ",".join(
+                                            f"{key}={value}" for key, value in arg_value.items()
+                                        ),
+                                    ]
+                                )
                 except KeyError:
                     pass
 
