@@ -30,6 +30,7 @@ class OmnisciServer:
         debug_timer=False,
         columnar_output=None,
         lazy_fetch=None,
+        omnisci_run_kwargs,
     ):  # default values of max_session_duration=43200 idle_session_duration=60
         if not os.path.isdir(omnisci_executable) and not os.access(omnisci_executable, os.X_OK):
             raise ValueError("Invalid omnisci executable given: " + omnisci_executable)
@@ -106,6 +107,9 @@ class OmnisciServer:
 
         if lazy_fetch is not None:
             self._server_start_cmdline.append(self._lazy_fetch_cmd)
+
+        for key, value in omnisci_run_kwargs.items():
+            self._server_start_cmdline.append(f"{key}={value}")
 
     def launch(self):
         "Launch OmniSciDB server"

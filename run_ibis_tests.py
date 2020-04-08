@@ -6,7 +6,7 @@ import traceback
 
 from environment import CondaEnvironment
 from server import OmnisciServer
-from utils import combinate_requirements, find_free_port, str_arg_to_bool
+from utils import combinate_requirements, find_free_port, KeyValueListParser, str_arg_to_bool
 
 
 def main():
@@ -148,6 +148,14 @@ def main():
         default=True,
         type=str_arg_to_bool,
         help="Table name name to use in omniscidb server.",
+    )
+    omnisci.add_argument(
+        "-omnisci_run_kwargs",
+        dest="omnisci_run_kwargs",
+        default={},
+        metavar="KEY1=VAL1,KEY2=VAL2...",
+        action=KeyValueListParser,
+        help="options to start omnisci server",
     )
 
     # Benchmark parameters
@@ -375,6 +383,7 @@ def main():
                 omnisci_cwd=args.omnisci_cwd,
                 user=args.user,
                 password=args.password,
+                omnisci_run_kwargs=args.omnisci_run_kwargs,
             )
             omnisci_server.launch()
 
@@ -436,6 +445,7 @@ def main():
                 "commit_omnisci",
                 "commit_ibis",
                 "import_mode",
+                "omnisci_run_kwargs",
             ]
             args_dict = vars(args)
             args_dict["data_file"] = f"'{args_dict['data_file']}'"

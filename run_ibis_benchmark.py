@@ -10,7 +10,7 @@ import mysql.connector
 from report import DbReport
 from server import OmnisciServer
 from server_worker import OmnisciServerWorker
-from utils import find_free_port, str_arg_to_bool
+from utils import find_free_port, KeyValueListParser, str_arg_to_bool
 
 
 def main():
@@ -210,6 +210,14 @@ def main():
         type=str_arg_to_bool,
         help="Table name name to use in omniscidb server.",
     )
+    omnisci.add_argument(
+        "-omnisci_run_kwargs",
+        dest="omnisci_run_kwargs",
+        default={},
+        metavar="KEY1=VAL1,KEY2=VAL2...",
+        action=KeyValueListParser,
+        help="options to start omnisci server",
+    )
     # Additional information
     optional.add_argument(
         "-commit_omnisci",
@@ -274,6 +282,7 @@ def main():
                 database_name=args.database_name,
                 user=args.user,
                 password=args.password,
+                omnisci_run_kwargs=args.omnisci_run_kwargs,
             )
 
             parameters["database_name"] = args.database_name
