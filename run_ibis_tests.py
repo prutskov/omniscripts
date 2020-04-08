@@ -455,7 +455,10 @@ def main():
                     if pure_arg in possible_benchmark_args:
                         arg_value = args_dict[pure_arg]
                         if arg_value:
-                            benchmark_cmd.extend([arg_name, str(arg_value)])
+                            if type(arg_value) != dict:
+                                benchmark_cmd.extend([arg_name, str(arg_value)])
+                            else:
+                                benchmark_cmd.extend([arg_name, ",".join(f"{key}={value}" for key, value in arg_value.items())])
                 except KeyError:
                     pass
 
