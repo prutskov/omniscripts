@@ -248,7 +248,7 @@ def load_data_ibis(
             # create table #1
             t_import_pandas_1, t_import_ibis_1 = omnisci_server_worker.import_data_by_ibis(
                 table_name="training",
-                data_files_names="%s/training_set.csv" % dataset_path,
+                data_files_names=training_file,
                 **general_options,
             )
 
@@ -263,7 +263,7 @@ def load_data_ibis(
             # create table #3
             t_import_pandas_3, t_import_ibis_3 = omnisci_server_worker.import_data_by_ibis(
                 table_name="training_meta",
-                data_files_names="%s/training_set_metadata.csv" % dataset_path,
+                data_files_names=training_meta_file,
                 **general_options,
             )
 
@@ -274,7 +274,7 @@ def load_data_ibis(
             # create table #4
             t_import_pandas_4, t_import_ibis_4 = omnisci_server_worker.import_data_by_ibis(
                 table_name="test_meta",
-                data_files_names="%s/test_set_metadata.csv" % dataset_path,
+                data_files_names=test_meta_file,
                 **general_options,
             )
             meta_dtypes["target"] = target
@@ -289,7 +289,7 @@ def load_data_ibis(
         elif import_mode == "fsi":
             t0 = timer()
             omnisci_server_worker._conn.create_table_from_csv("training", training_file, schema)
-            omnisci_server_worker._conn.create_table_from_csv("test", test_file, schema)
+            omnisci_server_worker._conn.create_table_from_csv("test", "%s/test_set.csv" % dataset_path, schema, skip_rows=skip_rows)
             omnisci_server_worker._conn.create_table_from_csv(
                 "training_meta", training_meta_file, meta_schema
             )
