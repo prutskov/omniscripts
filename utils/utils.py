@@ -34,7 +34,7 @@ def execute_process(cmdline, cwd=None, shell=False, daemon=False, print_output=T
         print("CMD: ", " ".join(cmdline))
         output = ""
         process = subprocess.Popen(
-            cmdline, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell,
+            cmdline, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell
         )
         if not daemon:
             output = process.communicate()[0].strip().decode()
@@ -75,7 +75,7 @@ def import_pandas_into_module_namespace(namespace, mode, ray_tmpdir=None, ray_me
                 )
             os.environ["MODIN_ENGINE"] = "ray"
             print(
-                "Running on Modin on Ray with tmp directory", ray_tmpdir, "and memory", ray_memory,
+                "Running on Modin on Ray with tmp directory", ray_tmpdir, "and memory", ray_memory
             )
         elif mode == "Modin_on_dask":
             os.environ["MODIN_ENGINE"] = "dask"
@@ -206,11 +206,7 @@ def print_times(times, backend=None):
 
 
 def print_results(results, backend=None, unit=""):
-    conversions = {
-        "ms": 1,
-        "s": 1 / 1000,
-        "m": 1 / (1000 * 60),
-    }
+    conversions = {"ms": 1, "s": 1 / 1000, "m": 1 / (1000 * 60)}
     multiplier = conversions.get(unit, 1)
     if backend:
         print(f"{backend} results:")
