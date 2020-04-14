@@ -350,7 +350,7 @@ def split_step(train_final, test_final):
     lbl = LabelEncoder()
     y = lbl.fit_transform(y)
 
-    (X_train, y_train, X_test, y_test), split_time = split(X, y, test_size=0.1, random_state=126)
+    (X_train, y_train, X_test, y_test), split_time = split(X, y, test_size=0.1, stratify=y, random_state=126)
 
     return (X_train, y_train, X_test, y_test, Xt, classes, class_weights), split_time
 
