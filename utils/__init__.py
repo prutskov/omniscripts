@@ -20,3 +20,5 @@ from .utils import (
     remove_fields_from_dict,
     convert_results_unit,
 )
+
+from .interface import create_interface
