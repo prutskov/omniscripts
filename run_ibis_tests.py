@@ -29,10 +29,6 @@ def main():
         os.environ["PYTHONIOENCODING"] = "UTF-8"
         os.environ["PYTHONUNBUFFERED"] = "1"
 
-        if args.python_version not in ["3.7", "3,6"]:
-            print(f"python {args.python_version} is not supported; choose from {3.6, 3.7}")
-            sys.exit(1)
-
         ibis_requirements = os.path.join(
             args.ibis_path, "ci", f"requirements-{args.python_version}-dev.yml"
         )

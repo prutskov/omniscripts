@@ -53,6 +53,7 @@ def add_common_arguments(parser, omniscript_path, supported_tasks):
         "--python_version",
         dest="python_version",
         default="3.7",
+        choices=["3.6", "3.7"],
         help="File with ci requirements for conda env.",
     )
 
