@@ -8,8 +8,8 @@ def add_common_arguments(parser, omniscript_path, supported_tasks):
     common = parser.add_argument_group("common")
 
     common.add_argument(
-        "-task",
-        dest="task",
+        "-tasks",
+        dest="tasks",
         nargs="+",
         required=True,
         choices=supported_tasks,

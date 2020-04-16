@@ -40,13 +40,13 @@ def main():
         combinate_requirements(ibis_requirements, args.ci_requirements, requirements_file)
         conda_env.create(args.env_check, requirements_file=requirements_file)
 
-        if "build" in args.task:
+        if "build" in args.tasks:
             install_ibis_cmdline = ["python3", os.path.join("setup.py"), "install"]
 
             print("IBIS INSTALLATION")
             conda_env.run(install_ibis_cmdline, cwd=args.ibis_path, print_output=False)
 
-        if "test" in args.task:
+        if "test" in args.tasks:
             ibis_data_script = os.path.join(args.ibis_path, "ci", "datamgr.py")
             dataset_download_cmdline = ["python3", ibis_data_script, "download"]
             dataset_import_cmdline = [
@@ -98,7 +98,7 @@ def main():
             print("RUNNING TESTS")
             conda_env.run(ibis_tests_cmdline, cwd=args.ibis_path)
 
-        if "benchmark" in args.task:
+        if "benchmark" in args.tasks:
             if not args.data_file:
                 print(
                     f"Parameter --data_file was received empty, but it is required for benchmarks"
