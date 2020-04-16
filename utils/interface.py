@@ -13,7 +13,7 @@ def add_common_arguments(parser, omniscript_path, supported_tasks):
         nargs="+",
         required=True,
         choices=supported_tasks,
-        help=f"Task for execute {supported_tasks}.",
+        help="Task for execute.",
     )
     common.add_argument(
         "-en", "--env_name", dest="env_name", required=True, help="Conda env name."
@@ -279,7 +279,8 @@ def add_benchmark_arguments(parser, supported_benchmarks):
         "-import_mode",
         dest="import_mode",
         default="fsi",
-        help="you can choose: {copy-from, pandas, fsi}",
+        choices=["copy-from", "pandas", "fsi"],
+        help="mode to read datasets",
     )
     benchmark.add_argument(
         "-optimizer",
@@ -304,8 +305,7 @@ def add_benchmark_arguments(parser, supported_benchmarks):
         "-pandas_mode",
         choices=["Pandas", "Modin_on_ray", "Modin_on_dask", "Modin_on_python"],
         default="Pandas",
-        help="Specifies which version of Pandas to use: "
-        "plain Pandas, Modin runing on Ray or on Dask",
+        help="Specifies which version of Pandas to use.",
     )
     benchmark.add_argument(
         "-ray_tmpdir",
