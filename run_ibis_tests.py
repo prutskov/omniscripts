@@ -6,7 +6,7 @@ import traceback
 from environment import CondaEnvironment
 from server import OmnisciServer
 from utils import (
-    create_interface,
+    create_cli,
     combinate_requirements,
 )
 
@@ -18,7 +18,7 @@ def main():
     omnisci_server = None
     args = None
 
-    interface = create_interface(omniscript_path, supported_tasks, supported_benchmarks)
+    interface = create_cli(omniscript_path, supported_tasks, supported_benchmarks)
 
     try:
         args = interface.parse_args()

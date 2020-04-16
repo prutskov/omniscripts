@@ -334,7 +334,7 @@ def add_benchmark_arguments(parser, supported_benchmarks):
     )
 
 
-def create_interface(omniscript_path, supported_tasks, supported_benchmarks):
+def create_cli(omniscript_path, supported_tasks, supported_benchmarks):
     parser = argparse.ArgumentParser(description="Run internal tests from ibis project")
 
     add_common_arguments(parser, omniscript_path, supported_tasks)

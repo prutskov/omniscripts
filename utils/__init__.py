@@ -20,4 +20,4 @@ from .utils import (
     convert_results_unit,
 )
 
-from .interface import create_interface
+from .interface import create_cli
