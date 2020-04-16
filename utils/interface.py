@@ -204,7 +204,7 @@ def add_omnisci_arguments(parser):
         default={},
         metavar="KEY1=VAL1,KEY2=VAL2...",
         action=KeyValueListParser,
-        help="options to start omnisci server",
+        help="additional options to pass when starting omnisci server",
     )
     omnisci.add_argument(
         "-commit_omnisci",
@@ -286,7 +286,7 @@ def add_benchmark_arguments(parser, supported_benchmarks):
         choices=["intel", "stock"],
         dest="optimizer",
         default="intel",
-        help="Which optimizer is used",
+        help="Which optimizer to use",
     )
     benchmark.add_argument(
         "-no_ibis",
@@ -322,14 +322,14 @@ def add_benchmark_arguments(parser, supported_benchmarks):
         "-no_ml",
         default=False,
         type=str_arg_to_bool,
-        help="Do not run machine learning benchmark, only ETL part",
+        help="Do not run machine learning part, run only ETL part",
     )
     benchmark.add_argument(
         "-gpu_memory",
         dest="gpu_memory",
         type=int,
         help="specify the memory of your gpu, default 16. "
-        "(This controls the lines to be used. Also work for CPU version. )",
+        "(This controls the amount of lines to be used. Also work for CPU version. )",
         default=16,
     )
 
