@@ -133,25 +133,25 @@ def add_omnisci_arguments(parser):
         help="Calcite port number to run omnisci_server on.",
     )
     omnisci.add_argument(
-        "-user", dest="user", default="admin", help="User name to use on omniscidb server."
+        "-user", dest="user", default="admin", help="User name to use for omniscidb server."
     )
     omnisci.add_argument(
         "-password",
         dest="password",
         default="HyperInteractive",
-        help="User password to use on omniscidb server.",
+        help="User password to use for omniscidb server.",
     )
     omnisci.add_argument(
         "-database_name",
         dest="database_name",
         default="agent_test_ibis",
-        help="Database name to use in omniscidb server.",
+        help="Database name to use for omniscidb server.",
     )
     omnisci.add_argument(
         "-table",
         dest="table",
         default="benchmark_table",
-        help="Table name name to use in omniscidb server.",
+        help="Table name name to use for omniscidb server.",
     )
     omnisci.add_argument(
         "-ipc_conn",
