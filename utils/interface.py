@@ -170,7 +170,7 @@ def add_omnisci_arguments(parser):
     omnisci.add_argument(
         "-columnar_output",
         dest="columnar_output",
-        default=True,
+        default=None,
         type=str_arg_to_bool,
         help="Allows OmniSci Core to directly materialize intermediate projections \
             and the final ResultSet in Columnar format where appropriate.",
