@@ -326,14 +326,3 @@ def check_fragments_size(fragments_size, count_table, import_mode, default_fragm
         result_fragments_size = [None] * count_table
 
     return result_fragments_size
-
-
-def create_tasks(passed_tasks, possible_tasks):
-    tasks = {task: True if task in passed_tasks else False for task in possible_tasks}
-
-    if True not in list(tasks.values()):
-        raise ValueError(
-            f"Only [{possible_tasks}] tasks are supported, passed tasks: [{passed_tasks}]"
-        )
-
-    return tasks

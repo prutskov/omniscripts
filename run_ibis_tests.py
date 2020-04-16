@@ -7,7 +7,6 @@ from environment import CondaEnvironment
 from server import OmnisciServer
 from utils import (
     create_interface,
-    create_tasks,
     combinate_requirements,
 )
 
@@ -30,8 +29,6 @@ def main():
         os.environ["PYTHONIOENCODING"] = "UTF-8"
         os.environ["PYTHONUNBUFFERED"] = "1"
 
-        tasks = create_tasks(args.task, supported_tasks)
-
         if args.python_version not in ["3.7", "3,6"]:
             print(f"python {args.python_version} is not supported; choose from {3.6, 3.7}")
             sys.exit(1)
@@ -47,13 +44,13 @@ def main():
         combinate_requirements(ibis_requirements, args.ci_requirements, requirements_file)
         conda_env.create(args.env_check, requirements_file=requirements_file)
 
-        if tasks["build"]:
+        if "build" in args.task:
             install_ibis_cmdline = ["python3", os.path.join("setup.py"), "install"]
 
             print("IBIS INSTALLATION")
             conda_env.run(install_ibis_cmdline, cwd=args.ibis_path, print_output=False)
 
-        if tasks["test"]:
+        if "test" in args.task:
             ibis_data_script = os.path.join(args.ibis_path, "ci", "datamgr.py")
             dataset_download_cmdline = ["python3", ibis_data_script, "download"]
             dataset_import_cmdline = [
@@ -105,7 +102,7 @@ def main():
             print("RUNNING TESTS")
             conda_env.run(ibis_tests_cmdline, cwd=args.ibis_path)
 
-        if tasks["benchmark"]:
+        if "benchmark" in args.task:
             if not args.data_file:
                 print(
                     f"Parameter --data_file was received empty, but it is required for benchmarks"
