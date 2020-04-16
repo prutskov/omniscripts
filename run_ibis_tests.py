@@ -6,7 +6,13 @@ import traceback
 
 from environment import CondaEnvironment
 from server import OmnisciServer
-from utils import combinate_requirements, find_free_port, KeyValueListParser, str_arg_to_bool
+from utils import (
+    create_tasks,
+    combinate_requirements,
+    find_free_port,
+    KeyValueListParser,
+    str_arg_to_bool,
+)
 
 
 def main():
@@ -27,10 +33,7 @@ def main():
 
     # Task
     required.add_argument(
-        "-task",
-        dest="task",
-        required=True,
-        help=f"Task for execute {possible_tasks}. Use , separator for multiple tasks",
+        "-task", dest="task", nargs="+", required=True, help=f"Task for execute {possible_tasks}.",
     )
 
     # Environment
@@ -348,16 +351,7 @@ def main():
         os.environ["PYTHONIOENCODING"] = "UTF-8"
         os.environ["PYTHONUNBUFFERED"] = "1"
 
-        required_tasks = args.task.split(",")
-        tasks = {}
-        for task in possible_tasks:
-            tasks[task] = True if task in required_tasks else False
-
-        if True not in list(tasks.values()):
-            print(
-                f"Only {list(tasks.keys())} are supported, {required_tasks} cannot find possible tasks"
-            )
-            sys.exit(1)
+        tasks = create_tasks(args.task, possible_tasks)
 
         if args.python_version not in ["3.7", "3,6"]:
             print(
