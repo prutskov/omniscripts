@@ -13,7 +13,6 @@ def main():
     omniscript_path = os.path.dirname(__file__)
     omnisci_server = None
     args = None
-    port_default_value = -1
 
     parser = argparse.ArgumentParser(description="Run internal tests from ibis project")
     required = parser.add_argument_group("common")
@@ -103,21 +102,21 @@ def main():
     omnisci.add_argument(
         "-port",
         dest="port",
-        default=port_default_value,
+        default=find_free_port(),
         type=int,
         help="TCP port number to run omnisci_server on.",
     )
     omnisci.add_argument(
         "-http_port",
         dest="http_port",
-        default=port_default_value,
+        default=find_free_port(),
         type=int,
         help="HTTP port number to run omnisci_server on.",
     )
     omnisci.add_argument(
         "-calcite_port",
         dest="calcite_port",
-        default=port_default_value,
+        default=find_free_port(),
         type=int,
         help="Calcite port number to run omnisci_server on.",
     )
@@ -348,13 +347,6 @@ def main():
         os.environ["IBIS_TEST_OMNISCIDB_PORT"] = str(args.port)
         os.environ["PYTHONIOENCODING"] = "UTF-8"
         os.environ["PYTHONUNBUFFERED"] = "1"
-
-        if args.port == port_default_value:
-            args.port = find_free_port()
-        if args.http_port == port_default_value:
-            args.http_port = find_free_port()
-        if args.calcite_port == port_default_value:
-            args.calcite_port = find_free_port()
 
         required_tasks = args.task.split(",")
         tasks = {}
