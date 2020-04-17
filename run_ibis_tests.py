@@ -4,7 +4,7 @@ import sys
 import traceback
 
 from environment import CondaEnvironment
-from server import OmnisciServer
+from server import perform_ibis_tests
 from utils import (
     create_cli,
     combinate_requirements,
@@ -15,7 +15,6 @@ def main():
     omniscript_path = os.path.dirname(__file__)
     supported_tasks = ["build", "test", "benchmark"]
     supported_benchmarks = ["ny_taxi", "santander", "census", "plasticc", "mortgage"]
-    omnisci_server = None
     args = None
 
     interface = create_cli(omniscript_path, supported_tasks, supported_benchmarks)
@@ -25,7 +24,6 @@ def main():
 
         os.environ["IBIS_TEST_OMNISCIDB_DATABASE"] = args.database_name
         os.environ["IBIS_TEST_DATA_DB"] = args.database_name
-        os.environ["IBIS_TEST_OMNISCIDB_PORT"] = str(args.port)
         os.environ["PYTHONIOENCODING"] = "UTF-8"
         os.environ["PYTHONUNBUFFERED"] = "1"
 
@@ -47,56 +45,7 @@ def main():
             conda_env.run(install_ibis_cmdline, cwd=args.ibis_path, print_output=False)
 
         if "test" in args.tasks:
-            ibis_data_script = os.path.join(args.ibis_path, "ci", "datamgr.py")
-            dataset_download_cmdline = ["python3", ibis_data_script, "download"]
-            dataset_import_cmdline = [
-                "python3",
-                ibis_data_script,
-                "omniscidb",
-                "-P",
-                str(args.port),
-                "--database",
-                args.database_name,
-            ]
-            report_file_name = f"report-{args.commit_ibis[:8]}-{args.commit_omnisci[:8]}.html"
-            if not os.path.isdir(args.report_path):
-                os.makedirs(args.report_path)
-            report_file_path = os.path.join(args.report_path, report_file_name)
-
-            ibis_tests_cmdline = [
-                "pytest",
-                "-m",
-                "omniscidb",
-                "--disable-pytest-warnings",
-                "-k",
-                args.expression,
-                f"--html={report_file_path}",
-            ]
-
-            print("STARTING OMNISCI SERVER")
-            omnisci_server = OmnisciServer(
-                omnisci_executable=args.executable,
-                omnisci_port=args.port,
-                http_port=args.http_port,
-                calcite_port=args.calcite_port,
-                database_name=args.database_name,
-                omnisci_cwd=args.omnisci_cwd,
-                user=args.user,
-                password=args.password,
-                debug_timer=args.debug_timer,
-                columnar_output=args.columnar_output,
-                lazy_fetch=args.lazy_fetch,
-                multifrag_rs=args.multifrag_rs,
-                omnisci_run_kwargs=args.omnisci_run_kwargs,
-            )
-            omnisci_server.launch()
-
-            print("PREPARING DATA")
-            conda_env.run(dataset_download_cmdline)
-            conda_env.run(dataset_import_cmdline)
-
-            print("RUNNING TESTS")
-            conda_env.run(ibis_tests_cmdline, cwd=args.ibis_path)
+            perform_ibis_tests(args, conda_env)
 
         if "benchmark" in args.tasks:
             if not args.data_file:
@@ -190,8 +139,6 @@ def main():
         sys.exit(1)
 
     finally:
-        if omnisci_server:
-            omnisci_server.terminate()
         if args and args.save_env is False:
             conda_env.remove()
 

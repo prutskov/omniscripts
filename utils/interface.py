@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from .utils import find_free_port, KeyValueListParser, str_arg_to_bool
+from .utils import KeyValueListParser, str_arg_to_bool
 
 
 def add_common_arguments(parser, omniscript_path, supported_tasks):
@@ -114,21 +114,21 @@ def add_omnisci_arguments(parser):
     omnisci.add_argument(
         "-port",
         dest="port",
-        default=find_free_port(),
+        default=None,
         type=int,
         help="TCP port number to run omnisci_server on.",
     )
     omnisci.add_argument(
         "-http_port",
         dest="http_port",
-        default=find_free_port(),
+        default=None,
         type=int,
         help="HTTP port number to run omnisci_server on.",
     )
     omnisci.add_argument(
         "-calcite_port",
         dest="calcite_port",
-        default=find_free_port(),
+        default=None,
         type=int,
         help="Calcite port number to run omnisci_server on.",
     )

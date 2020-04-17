@@ -1,1 +1,1 @@
-from .server import OmnisciServer
+from .server import OmnisciServer, perform_ibis_tests
