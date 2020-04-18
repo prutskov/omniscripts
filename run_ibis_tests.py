@@ -82,7 +82,7 @@ def main():
                 "calcite_port",
                 "user",
                 "password",
-                "ipc_connection",
+                "ipc_conn",
                 "database_name",
                 "table",
                 "commit_omnisci",
