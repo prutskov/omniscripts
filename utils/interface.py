@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from .utils import KeyValueListParser, str_arg_to_bool
+from .utils import DataFileParser, KeyValueListParser, str_arg_to_bool
 
 
 def add_common_arguments(parser, omniscript_path, supported_tasks):
@@ -243,7 +243,10 @@ def add_benchmark_arguments(parser, supported_benchmarks):
         "-bench_name", dest="bench_name", choices=supported_benchmarks, help="Benchmark name."
     )
     benchmark.add_argument(
-        "-data_file", dest="data_file", help="A datafile that should be loaded."
+        "-data_file",
+        dest="data_file",
+        action=DataFileParser,
+        help="A datafile that should be loaded.",
     )
     benchmark.add_argument(
         "-dfiles_num",

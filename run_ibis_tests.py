@@ -48,12 +48,6 @@ def main():
             perform_ibis_tests(args, conda_env)
 
         if "benchmark" in args.tasks:
-            if not args.data_file:
-                print(
-                    f"Parameter --data_file was received empty, but it is required for benchmarks"
-                )
-                sys.exit(1)
-
             benchmark_script_path = os.path.join(omniscript_path, "run_ibis_benchmark.py")
 
             benchmark_cmd = ["python3", benchmark_script_path]
@@ -102,7 +96,6 @@ def main():
                 "omnisci_run_kwargs",
             ]
             args_dict = vars(args)
-            args_dict["data_file"] = f"'{args_dict['data_file']}'"
             for arg_name in list(interface._option_string_actions.keys()):
                 try:
                     pure_arg = re.sub(r"^--*", "", arg_name)
