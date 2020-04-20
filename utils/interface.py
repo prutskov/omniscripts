@@ -1,61 +1,10 @@
 import argparse
 import os
+import re
 
 from .utils import DataFileParser, KeyValueListParser, str_arg_to_bool
-
-
-def add_common_arguments(parser, omniscript_path, supported_tasks):
-    common = parser.add_argument_group("common")
-
-    common.add_argument(
-        "-tasks",
-        dest="tasks",
-        nargs="+",
-        required=True,
-        choices=supported_tasks,
-        help="Task for execute.",
-    )
-    common.add_argument(
-        "-en", "--env_name", dest="env_name", required=True, help="Conda env name."
-    )
-    common.add_argument(
-        "-ec",
-        "--env_check",
-        dest="env_check",
-        default=False,
-        type=str_arg_to_bool,
-        help="Check if env exists. If it exists don't recreate.",
-    )
-    common.add_argument(
-        "-s",
-        "--save_env",
-        dest="save_env",
-        default=False,
-        type=str_arg_to_bool,
-        help="Save conda env after executing.",
-    )
-    common.add_argument(
-        "-r",
-        "--report_path",
-        dest="report_path",
-        default=os.path.join(omniscript_path, ".."),
-        help="Path to report file.",
-    )
-    common.add_argument(
-        "-ci",
-        "--ci_requirements",
-        dest="ci_requirements",
-        default=os.path.join(omniscript_path, "ci_requirements.yml"),
-        help="File with ci requirements for conda env.",
-    )
-    common.add_argument(
-        "-py",
-        "--python_version",
-        dest="python_version",
-        default="3.7",
-        choices=["3.6", "3.7"],
-        help="File with ci requirements for conda env.",
-    )
+from environment import create_conda_env
+from server import OmnisciServer
 
 
 def add_mysql_arguments(parser):
@@ -148,19 +97,6 @@ def add_omnisci_arguments(parser):
         help="Database name to use for omniscidb server.",
     )
     omnisci.add_argument(
-        "-table",
-        dest="table",
-        default="benchmark_table",
-        help="Table name name to use for omniscidb server.",
-    )
-    omnisci.add_argument(
-        "-ipc_conn",
-        dest="ipc_connection",
-        default=True,
-        type=str_arg_to_bool,
-        help="Connection type for ETL operations",
-    )
-    omnisci.add_argument(
         "-debug_timer",
         dest="debug_timer",
         default=False,
@@ -190,15 +126,6 @@ def add_omnisci_arguments(parser):
         help="[multifrag_rs help message]",
     )
     omnisci.add_argument(
-        "-fragments_size",
-        dest="fragments_size",
-        default=None,
-        nargs="*",
-        type=int,
-        help="Number of rows per fragment that is a unit of the table for query processing. \
-            Should be specified for each table in workload",
-    )
-    omnisci.add_argument(
         "-omnisci_run_kwargs",
         dest="omnisci_run_kwargs",
         default={},
@@ -217,9 +144,6 @@ def add_omnisci_arguments(parser):
 def add_ibis_arguments(parser):
     ibis = parser.add_argument_group("ibis")
 
-    ibis.add_argument(
-        "-i", "--ibis_path", dest="ibis_path", required=True, help="Path to ibis directory."
-    )
     ibis.add_argument(
         "-expression",
         dest="expression",
@@ -335,15 +259,270 @@ def add_benchmark_arguments(parser, supported_benchmarks):
         "(This controls the amount of lines to be used. Also work for CPU version. )",
         default=16,
     )
+    benchmark.add_argument(
+        "-fragments_size",
+        dest="fragments_size",
+        default=None,
+        nargs="*",
+        type=int,
+        help="Number of rows per fragment that is a unit of the table for query processing. \
+            Should be specified for each table in workload",
+    )
+    benchmark.add_argument(
+        "-table",
+        dest="table",
+        default="benchmark_table",
+        help="Table name name to use for omniscidb server.",
+    )
+    benchmark.add_argument(
+        "-ipc_conn",
+        dest="ipc_connection",
+        default=True,
+        type=str_arg_to_bool,
+        help="Connection type for ETL operations",
+    )
 
 
-def create_cli(omniscript_path, supported_tasks, supported_benchmarks):
-    parser = argparse.ArgumentParser(description="Run internal tests from ibis project")
+def add_omniscript_arguments(omniscript, omniscript_path):
+    omniscript.add_argument(
+        "-i", "--ibis_path", dest="ibis_path", required=True, help="Path to ibis directory."
+    )
 
-    add_common_arguments(parser, omniscript_path, supported_tasks)
-    add_omnisci_arguments(parser)
-    add_ibis_arguments(parser)
-    add_benchmark_arguments(parser, supported_benchmarks)
-    add_mysql_arguments(parser)
+    # Setup environment
+    omniscript.add_argument(
+        "-en", "--env_name", dest="env_name", required=True, help="Conda env name."
+    )
+    omniscript.add_argument(
+        "-ec",
+        "--env_check",
+        dest="env_check",
+        default=False,
+        type=str_arg_to_bool,
+        help="Check if env exists. If it exists don't recreate.",
+    )
+    omniscript.add_argument(
+        "-s",
+        "--save_env",
+        dest="save_env",
+        default=False,
+        type=str_arg_to_bool,
+        help="Save conda env after executing.",
+    )
+    omniscript.add_argument(
+        "-py",
+        "--python_version",
+        dest="python_version",
+        default="3.7",
+        choices=["3.6", "3.7"],
+        help="File with ci requirements for conda env.",
+    )
+    omniscript.add_argument(
+        "-ci",
+        "--ci_requirements",
+        dest="ci_requirements",
+        default=os.path.join(omniscript_path, "ci_requirements.yml"),
+        help="File with ci requirements for conda env.",
+    )
 
-    return parser
+
+def create_cli(omniscript_path, supported_benchmarks):
+    omniscript = argparse.ArgumentParser(description="omniscript cli")
+    add_omniscript_arguments(omniscript, omniscript_path)
+
+    subparsers = omniscript.add_subparsers(required=True, help="sub-command help")
+
+    parser_build = subparsers.add_parser("build", help="build help")
+    parser_build.set_defaults(func=build)
+
+    parser_ibis_test = subparsers.add_parser("test", help="test ibis help")
+    parser_ibis_test.set_defaults(func=ibis_test)
+    add_ibis_arguments(parser_ibis_test)
+    add_omnisci_arguments(parser_ibis_test)
+    parser_ibis_test.add_argument(
+        "-r",
+        "--report_path",
+        dest="report_path",
+        default=os.path.join(omniscript_path, ".."),
+        help="Path to report file.",
+    )
+
+    parser_benchmark = subparsers.add_parser("benchmark", help="build help")
+    # hack
+    parser_benchmark.set_defaults(
+        func=benchmark, omniscript_path=omniscript_path, interface=omniscript
+    )
+    add_benchmark_arguments(parser_benchmark, supported_benchmarks)
+    add_mysql_arguments(parser_benchmark)
+    add_omnisci_arguments(parser_benchmark)
+
+    return omniscript
+
+
+def build(args):
+    with create_conda_env(
+        args.ibis_path,
+        args.env_name,
+        args.env_check,
+        args.env_save,
+        args.python_version,
+        args.ci_requirements,
+    ) as conda_env:
+
+        print("IBIS INSTALLATION")
+        install_ibis_cmdline = ["python3", os.path.join("setup.py"), "install"]
+        conda_env.run(install_ibis_cmdline, cwd=args.ibis_path, print_output=False)
+
+
+def ibis_test(args):
+    with create_conda_env(
+        args.ibis_path,
+        args.env_name,
+        args.env_check,
+        args.env_save,
+        args.python_version,
+        args.ci_requirements,
+    ) as conda_env:
+
+        ibis_data_script = os.path.join(args.ibis_path, "ci", "datamgr.py")
+
+        report_file_name = f"report-{args.commit_ibis[:8]}-{args.commit_omnisci[:8]}.html"
+        if not os.path.isdir(args.report_path):
+            os.makedirs(args.report_path)
+        report_file_path = os.path.join(args.report_path, report_file_name)
+
+        print("STARTING OMNISCI SERVER")
+        with OmnisciServer(
+            omnisci_executable=args.executable,
+            omnisci_port=args.port,
+            http_port=args.http_port,
+            calcite_port=args.calcite_port,
+            database_name=args.database_name,
+            omnisci_cwd=args.omnisci_cwd,
+            user=args.user,
+            password=args.password,
+            debug_timer=args.debug_timer,
+            columnar_output=args.columnar_output,
+            lazy_fetch=args.lazy_fetch,
+            multifrag_rs=args.multifrag_rs,
+            omnisci_run_kwargs=args.omnisci_run_kwargs,
+        ) as omnisci_server_launched:
+
+            print("DOWNLOADING DATA")
+            dataset_download_cmdline = ["python3", ibis_data_script, "download"]
+            conda_env.run(dataset_download_cmdline)
+
+            print("IMPORTING DATA BY OMNISCI")
+            dataset_import_cmdline = [
+                "python3",
+                ibis_data_script,
+                "omniscidb",
+                "-P",
+                str(omnisci_server_launched.server_port),
+                "--database",
+                args.database_name,
+            ]
+            conda_env.run(dataset_import_cmdline)
+
+            print("RUNNING TESTS")
+            ibis_tests_cmdline = [
+                "pytest",
+                "-m",
+                "omniscidb",
+                "--disable-pytest-warnings",
+                "-k",
+                args.expression,
+                f"--html={report_file_path}",
+            ]
+
+            os.environ["IBIS_TEST_OMNISCIDB_DATABASE"] = args.database_name
+            os.environ["IBIS_TEST_DATA_DB"] = args.database_name
+            os.environ["IBIS_TEST_OMNISCIDB_PORT"] = str(omnisci_server_launched.server_port)
+            # pytest depends on above env variables
+            conda_env.run(ibis_tests_cmdline, cwd=args.ibis_path)
+
+
+def benchmark(args):
+    with create_conda_env(
+        args.ibis_path,
+        args.env_name,
+        args.env_check,
+        args.env_save,
+        args.python_version,
+        args.ci_requirements,
+    ) as conda_env:
+
+        benchmark_script_path = os.path.join(args.omniscript_path, "run_ibis_benchmark.py")
+        benchmark_cmd = ["python3", benchmark_script_path]
+
+        possible_benchmark_args = [
+            "bench_name",
+            "data_file",
+            "dfiles_num",
+            "iterations",
+            "dnd",
+            "dni",
+            "validation",
+            "optimizer",
+            "no_ibis",
+            "no_pandas",
+            "pandas_mode",
+            "ray_tmpdir",
+            "ray_memory",
+            "no_ml",
+            "gpu_memory",
+            "db_server",
+            "db_port",
+            "db_user",
+            "db_pass",
+            "db_name",
+            "db_table_etl",
+            "db_table_ml",
+            "executable",
+            "omnisci_cwd",
+            "port",
+            "http_port",
+            "calcite_port",
+            "user",
+            "password",
+            "ipc_conn",
+            "database_name",
+            "table",
+            "commit_omnisci",
+            "commit_ibis",
+            "import_mode",
+            "debug_timer",
+            "columnar_output",
+            "lazy_fetch",
+            "multifrag_rs",
+            "fragments_size",
+            "omnisci_run_kwargs",
+        ]
+        args_dict = vars(args)
+        for arg_name in list(args.interface._option_string_actions.keys()):
+            try:
+                pure_arg = re.sub(r"^--*", "", arg_name)
+                if pure_arg in possible_benchmark_args:
+                    arg_value = args_dict[pure_arg]
+                    # correct filling of arguments with default values
+                    if arg_value is not None:
+                        if isinstance(arg_value, dict):
+                            if arg_value:
+                                benchmark_cmd.extend(
+                                    [
+                                        arg_name,
+                                        ",".join(
+                                            f"{key}={value}" for key, value in arg_value.items()
+                                        ),
+                                    ]
+                                )
+                        elif isinstance(arg_value, (list, tuple)):
+                            if arg_value:
+                                benchmark_cmd.extend([arg_name] + [str(x) for x in arg_value])
+                        else:
+                            benchmark_cmd.extend([arg_name, str(arg_value)])
+
+            except KeyError:
+                pass
+
+        print(benchmark_cmd)
+        conda_env.run(benchmark_cmd)
