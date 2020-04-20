@@ -206,6 +206,9 @@ def perform_ibis_tests(args, conda_env):
             args.expression,
             f"--html={report_file_path}",
         ]
+
+        os.environ["IBIS_TEST_OMNISCIDB_DATABASE"] = args.database_name
+        os.environ["IBIS_TEST_DATA_DB"] = args.database_name
         os.environ["IBIS_TEST_OMNISCIDB_PORT"] = str(omnisci_server_launched.server_port)
         # pytest depends on "IBIS_TEST_OMNISCIDB_PORT"
         conda_env.run(ibis_tests_cmdline, cwd=args.ibis_path)

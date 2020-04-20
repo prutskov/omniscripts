@@ -22,8 +22,6 @@ def main():
     try:
         args = interface.parse_args()
 
-        os.environ["IBIS_TEST_OMNISCIDB_DATABASE"] = args.database_name
-        os.environ["IBIS_TEST_DATA_DB"] = args.database_name
         os.environ["PYTHONIOENCODING"] = "UTF-8"
         os.environ["PYTHONUNBUFFERED"] = "1"
 
