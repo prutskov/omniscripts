@@ -1,5 +1,5 @@
-012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
-          1         2         3         4         5         6         7         8         9         a         b
+01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+          1         2         3         4         5         6         7         8         9         a         b         c         d
 # Benchmarking scripts that are used to run OmniSciDB benchmarks in automated way in TeamCity and for performance analyzes in development cycle.
 
 ## Requirements
