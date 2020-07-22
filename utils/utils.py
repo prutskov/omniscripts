@@ -69,6 +69,11 @@ def import_pandas_into_module_namespace(namespace, mode, ray_tmpdir=None, ray_me
         elif mode == "Modin_on_python":
             os.environ["MODIN_ENGINE"] = "python"
             print("Pandas backend: Modin on pure Python")
+        elif mode == "Modin_on_omnisci":
+            os.environ["MODIN_ENGINE"] = "ray"
+            os.environ["MODIN_BACKEND"] = "omnisci"
+            os.environ["MODIN_EXPERIMENTAL"] = "True"
+            print("Pandas backend: Modin on OmniSci")
         else:
             raise ValueError(f"Unknown pandas mode {mode}")
         import modin.pandas as pd
@@ -217,6 +222,29 @@ def load_data_pandas(
         header=header,
         dtype=types,
         compression="gzip" if use_gzip else None,
+        parse_dates=parse_dates,
+    )
+
+def load_data_modin(
+    filename,
+    columns_names=None,
+    columns_types=None,
+    header=None,
+    nrows=None,
+    use_gzip=False,
+    parse_dates=None,
+    pd=None,
+):
+    if not pd:
+        import_pandas_into_module_namespace(namespace=load_data_pandas.__globals__, mode="Pandas")
+    types = None
+    if columns_types:
+        types = {columns_names[i]: columns_types[i] if (columns_types[i] != "category") else "string" for i in range(len(columns_names))}
+    print("IMPORT TYPES:", types)
+    return pd.read_csv(
+        filename,
+        names=columns_names,
+        dtype=types,
         parse_dates=parse_dates,
     )
 
