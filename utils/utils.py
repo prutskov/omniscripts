@@ -240,7 +240,6 @@ def load_data_modin(
     types = None
     if columns_types:
         types = {columns_names[i]: columns_types[i] if (columns_types[i] != "category") else "string" for i in range(len(columns_names))}
-    print("IMPORT TYPES:", types)
     return pd.read_csv(
         filename,
         names=columns_names,

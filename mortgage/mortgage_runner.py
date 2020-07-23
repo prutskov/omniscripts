@@ -228,6 +228,9 @@ def run_benchmark(parameters):
         etl_times_pd["Backend"] = parameters["pandas_mode"]
         result["ETL"].append(etl_times_pd)
 
+        res = df_pd.shape
+        #print(df_pd)
+
         if not parameters["no_ml"]:
             result["ML"].append(
                 _run_ml(df_pd, N_RUNS, mb_pd, ml_keys, ml_score_keys, parameters["pandas_mode"])

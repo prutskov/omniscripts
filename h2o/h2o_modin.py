@@ -484,7 +484,7 @@ def queries_modin(filename, pandas_mode, extended_functionality):
             "groupby_query3": groupby_query3_modin,
             "groupby_query4": groupby_query4_modin,
             "groupby_query5": groupby_query5_modin,
-            "groupby_query6": groupby_query6_modin,
+            #"groupby_query6": groupby_query6_modin,
             "groupby_query7": groupby_query7_modin,
             "groupby_query8": groupby_query8_modin,
             # "groupby_query9": groupby_query9_modin,
