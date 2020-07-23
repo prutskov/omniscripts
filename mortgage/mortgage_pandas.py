@@ -445,12 +445,15 @@ def etl_pandas(
         leave_category_strings,
     )
     pd_dfs = []
+    t0 = timer()
     for data_file_num in range(dfiles_num):
         year, quarter = MortgagePandasBenchmark.split_year_quarter(data_file_num)
         for fname in mb.list_perf_files(quarter=quarter, year=year):
             pd_dfs.append(mb.run_cpu_workflow(quarter=quarter, year=year, perf_file=fname))
 
     pd_df = pd_dfs[0] if len(pd_dfs) == 1 else pd.concat(pd_dfs)
+    res = pd_df.shape # to trigger execution for modin
+    etl_times["t_etl"] = timer() - t0
     etl_times["t_readcsv"] = mb.t_read_csv
     # TODO: enable those only in verbose mode
     # print("ETL timings")
@@ -459,9 +462,9 @@ def etl_pandas(
     # print("  t_drop_cols = ", round(mb.t_drop_cols, 2), " s")
     # print("  t_merge = ", round(mb.t_merge, 2), " s")
     # print("  t_conv_dates = ", round(mb.t_conv_dates, 2), " s")
-    etl_times["t_etl"] = (
-        mb.t_one_hot_encoding + mb.t_fillna + mb.t_drop_cols + mb.t_merge + mb.t_conv_dates
-    )
+    #etl_times["t_etl"] = (
+    #    mb.t_one_hot_encoding + mb.t_fillna + mb.t_drop_cols + mb.t_merge + mb.t_conv_dates
+    #)
 
     return pd_df, mb, etl_times
 
