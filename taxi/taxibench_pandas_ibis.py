@@ -479,8 +479,14 @@ def etl_pandas(
             for f in filename
         ]
 
-    concatenated_df = pd.concat(df_from_each_file, ignore_index=True)
-    etl_results["t_readcsv"] = timer() - t0
+    if pandas_mode != "Modin_on_omnisci":
+        concatenated_df = pd.concat(df_from_each_file, ignore_index=True)
+        etl_results["t_readcsv"] = timer() - t0
+    else:
+        etl_results["t_readcsv"] = timer() - t0
+        # for now count pure read_csv time
+        concatenated_df = pd.concat(df_from_each_file, ignore_index=True)
+        res = concatenated_df.shape
 
     queries_parameters = {
         query_name: {
