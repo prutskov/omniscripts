@@ -474,9 +474,10 @@ def etl_pandas(
         etl_results["t_readcsv"] = timer() - t0
     else:
         etl_results["t_readcsv"] = timer() - t0
-        # for now count pure read_csv time
+        t0 = timer()
         concatenated_df = pd.concat(df_from_each_file, ignore_index=True)
         concatenated_df.shape  # this is to execute concat
+        etl_results["t_readcsv"] += timer() - t0
 
     queries_parameters = {
         query_name: {
