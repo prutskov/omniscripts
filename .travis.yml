@@ -4,7 +4,17 @@ python:
 # command to install dependencies
 install:
   - pip install black flake8 flake8-per-file-ignores
+  - git clone https://github.com/intel-ai/omniscidb.git
+  - cd omniscidb && git checkout modin
+  - conda env create -f scripts/mapd-deps-conda-dev-env.yml --force
+  - conda activate omnisci-dev && cd omniscidb && bash scripts/conda/build-install-all.sh
+  - git clone https://github.com/intel-ai/modin.git
+  - cd modin && git checkout omnisci-on-ray
+  - pip install "ray==0.8.7"
+  - conda activate omnisci-dev && conda install -c conda-forge matplotlib sqlalchemy pytest-custom-exit-code pytest-cov pytest
+  - cd modin && pip install -e .
 # command to run tests
 script:
   - black . --check
   - flake8
+  - pytest modin/experimental/engines/omnisci_on_ray/test/test_dataframe.py --import-mode=importlib
