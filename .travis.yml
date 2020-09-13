@@ -3,6 +3,7 @@ python:
   - "3.7"
 # command to install dependencies
 install:
+  - CWD="$PWD"
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -17,20 +18,25 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
+
   - pip install black flake8 flake8-per-file-ignores
+
+  - cd ..
   - git clone https://github.com/intel-ai/omniscidb.git
   - cd omniscidb && git checkout modin
-  - pwd
   - conda env create -f scripts/mapd-deps-conda-dev-env.yml --force
   - conda activate omnisci-dev && bash scripts/conda/build-install-all.sh
+  - conda list
+
   - cd ..
   - conda env list
   - git clone https://github.com/intel-ai/modin.git
   - cd modin && git checkout omnisci-on-ray
-  - pwd
   - pip install "ray==0.8.7"
   - conda activate omnisci-dev && conda install -c conda-forge matplotlib sqlalchemy pytest-custom-exit-code pytest-cov pytest
   - pip install -e .
+
+  - cd "$CWD"
 # command to run tests
 script:
   - black . --check
