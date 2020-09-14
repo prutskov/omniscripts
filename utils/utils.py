@@ -231,7 +231,7 @@ def load_data_pandas(
 
 
 def load_data_modin_on_omnisci(
-    filename, columns_names=None, columns_types=None, parse_dates=None, pd=None,
+    filename, columns_names=None, columns_types=None, parse_dates=None, pd=None,skiprows=None,
 ):
     if not pd:
         import_pandas_into_module_namespace(
@@ -244,7 +244,7 @@ def load_data_modin_on_omnisci(
             for i in range(len(columns_names))
         }
 
-    all_but_dates = None
+    all_but_dates = dtypes
     dates_only = False
     if parse_dates:
         parse_dates = parse_dates if isinstance(parse_dates, (list, tuple)) else [parse_dates]
@@ -253,7 +253,7 @@ def load_data_modin_on_omnisci(
         }
         dates_only = [col for (col, valtype) in dtypes.items() if valtype in parse_dates]
 
-    return pd.read_csv(filename, names=columns_names, dtype=all_but_dates, parse_dates=dates_only,)
+    return pd.read_csv(filename, names=columns_names, dtype=all_but_dates, parse_dates=dates_only,skiprows=skiprows)
 
 
 class S3Client:
