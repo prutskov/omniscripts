@@ -36,9 +36,9 @@ install:
   - conda activate omnisci-dev && conda install -c conda-forge matplotlib sqlalchemy pytest-custom-exit-code pytest-cov pytest
   - pip install -e .
 
-  - cd "$CWD"
 # command to run tests
 script:
+  - pytest modin/experimental/engines/omnisci_on_ray/test/test_dataframe.py --import-mode=importlib
+  - cd "$CWD"
   - black . --check
   - flake8
-  - pytest modin/experimental/engines/omnisci_on_ray/test/test_dataframe.py --import-mode=importlib
