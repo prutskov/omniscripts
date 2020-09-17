@@ -41,4 +41,6 @@ script:
   - flake8
 
   - cd ../omniscripts
+  - conda env list
+  - conda deactivate
   - python run_ibis_tests.py -executable $CWD/../omniscidb/build/bin/omnisci_server -task build,benchmark --env_name test-env --env_check True --save_env True --modin_path $CWD/../modin/ -data_file $CWD/data/census1k.csv -dfiles_num 1 -bench_name census -no_ibis true -pandas_mode Modin_on_omnisci -no_ml true

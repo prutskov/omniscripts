@@ -19,6 +19,7 @@ def str_arg_to_bool(v):
 
 def combinate_requirements(ibis, ci, res):
     import hiyapyco
+
     merged_yaml = hiyapyco.load([ibis, ci], method=hiyapyco.METHOD_MERGE)
     with open(res, "w") as f_res:
         hiyapyco.dump(merged_yaml, stream=f_res)
