@@ -115,7 +115,9 @@ def etl_cpu_pandas(df, df_meta, etl_times):
     t_etl_start = timer()
 
     # workaround for both Modin_on_ray and Modin_on_omnisci modes. Eventually this should be fixed
-    df["flux_ratio_sq"] = (df["flux"] / df["flux_err"])*(df["flux"] / df["flux_err"]) #np.power(df["flux"] / df["flux_err"], 2.0)
+    df["flux_ratio_sq"] = (df["flux"] / df["flux_err"]) * (
+        df["flux"] / df["flux_err"]
+    )  # np.power(df["flux"] / df["flux_err"], 2.0)
     df["flux_by_flux_ratio_sq"] = df["flux"] * df["flux_ratio_sq"]
 
     aggs = {
@@ -352,7 +354,7 @@ def load_data_ibis(
 
 def load_data_pandas(dataset_path, skip_rows, dtypes, meta_dtypes, pandas_mode):
     train = pd.read_csv("%s/training_set.csv" % dataset_path, dtype=dtypes)
-    # Currently we need to avoid skip_rows in Mode_on_omnisci mode since 
+    # Currently we need to avoid skip_rows in Mode_on_omnisci mode since
     # pyarrow uses it in incompatible way
     if pandas_mode == "Modin_on_omnisci":
         test = pd.read_csv(
@@ -459,7 +461,7 @@ def etl_all_pandas(dataset_path, skip_rows, dtypes, meta_dtypes, etl_keys, panda
         skip_rows=skip_rows,
         dtypes=dtypes,
         meta_dtypes=meta_dtypes,
-        pandas_mode=pandas_mode
+        pandas_mode=pandas_mode,
     )
     etl_times["t_readcsv"] += timer() - t0
 
@@ -656,7 +658,7 @@ def run_benchmark(parameters):
                 dtypes=dtypes,
                 meta_dtypes=meta_dtypes,
                 etl_keys=etl_keys,
-                pandas_mode=parameters["pandas_mode"]
+                pandas_mode=parameters["pandas_mode"],
             )
 
             print_results(results=etl_times, backend=parameters["pandas_mode"], unit="s")
