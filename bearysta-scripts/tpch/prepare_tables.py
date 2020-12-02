@@ -97,7 +97,7 @@ def get_line_count(filename):
 
 fragment_sizes = {
     table
-    + "_fs": max([get_line_count(data_folder + "/{}.tbl".format(table)) // int(num_threads), 1000000])
+    + "_fs": max([get_line_count("{}/{}.tbl".format(data_folder, table)) // int(num_threads), 1000000])
     for table in [
         "customer",
         "lineitem",
