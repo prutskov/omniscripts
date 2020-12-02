@@ -29,11 +29,10 @@ for f in gen_$1/*.tbl; do
     echo "$f lines count: $(wc -l < $f)"
 done;
 
-if [ ! -d "gen_$1/data-$1-$2" ]; then
-    mkdir -p gen_$1/data-$1-$2 && ../../../omniscidb/build/bin/initdb --data gen_$1/data-$1-$2
+if [ ! -d "gen_$1/data-$2" ]; then
+    mkdir -p gen_$1/data-$2 && ../../../omniscidb/build/bin/initdb --data gen_$1/data-$2
 
     python3 prepare_tables.py gen_$1 $2
 
-    ../../../omniscidb/build/bin/omnisci_server --db-query-list=gen_$1/create_tables.sql --exit-after-warmup --data gen_$1/data-$1-$2 --log-severity-clog=INFO
+    ../../../omniscidb/build/bin/omnisci_server --db-query-list=gen_$1/create_tables.sql --exit-after-warmup --data gen_$1/data-$2 --log-severity-clog=INFO
 fi
-

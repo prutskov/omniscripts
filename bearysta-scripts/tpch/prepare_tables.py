@@ -50,8 +50,8 @@ CREATE TABLE ORDERS  ( O_ORDERKEY       INTEGER NOT NULL,
                            O_ORDERSTATUS    CHAR(1) NOT NULL,
                            O_TOTALPRICE     DECIMAL(15,2) NOT NULL,
                            O_ORDERDATE      DATE NOT NULL,
-                           O_ORDERPRIORITY  CHAR(15) NOT NULL,  
-                           O_CLERK          CHAR(15) NOT NULL, 
+                           O_ORDERPRIORITY  CHAR(15) NOT NULL,
+                           O_CLERK          CHAR(15) NOT NULL,
                            O_SHIPPRIORITY   INTEGER NOT NULL,
                            O_COMMENT        VARCHAR(79) NOT NULL) WITH (FRAGMENT_SIZE={orders_fs});
 
@@ -97,7 +97,9 @@ def get_line_count(filename):
 
 fragment_sizes = {
     table
-    + "_fs": max([get_line_count("{}/{}.tbl".format(data_folder, table)) // int(num_threads), 1000000])
+    + "_fs": max(
+        [get_line_count("{}/{}.tbl".format(data_folder, table)) // int(num_threads), 1000000]
+    )
     for table in [
         "customer",
         "lineitem",
