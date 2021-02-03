@@ -85,6 +85,7 @@ COPY supplier FROM '{data_folder}/supplier.tbl' WITH (header='false',delimiter='
 
 data_folder = sys.argv[1]
 num_threads = sys.argv[2]
+num_slack   = sys.argv[3]
 
 
 def get_line_count(filename):
@@ -98,7 +99,7 @@ def get_line_count(filename):
 fragment_sizes = {
     table
     + "_fs": max(
-        [get_line_count("{}/{}.tbl".format(data_folder, table)) // int(num_threads), 1000000]
+        [get_line_count("{}/{}.tbl".format(data_folder, table)) // int(num_threads) // int(num_slack), 100000]
     )
     for table in [
         "customer",
