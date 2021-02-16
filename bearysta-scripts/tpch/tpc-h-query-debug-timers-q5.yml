@@ -35,6 +35,8 @@ axis:
 
 series:
      - scale
+     - subfr
+     - columnar
 #    - branch
 #    - numa
 
@@ -43,8 +45,8 @@ values:
 #    - execution_time_ms
     - total_time_ms
     - compilation
-    - collectAllDeviceResults
-    - sort
+    #- collectAllDeviceResults
+    #- sort
 
 # Create another table (or Excel filter) for each value in these columns
 variants:

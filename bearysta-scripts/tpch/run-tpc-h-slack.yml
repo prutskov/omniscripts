@@ -35,10 +35,16 @@ variables:
         - q1
         - q5
         - q11
+    subfr:
+        - true
+        - false
+    columnar:
+        - true
+        - false
     OMP_NUM_THREADS: $(../list_cpu_affinity.py --total $affinity)
     cpus: $(../list_cpu_affinity.py $affinity)
     omnisci_server:
         - '../../../omniscidb/build/bin/omnisci_server'
 
 commands:
-    tpch: ./run-tpc-h.sh --enable-debug-timer --enable-modern-thread-pool=true --max-num-threads=$OMP_NUM_THREADS
+    tpch: ./run-tpc-h.sh --enable-debug-timer --enable-modern-thread-pool=true --max-num-threads=$OMP_NUM_THREADS --enable-subfragments=$subfr --enable-columnar-output=$columnar

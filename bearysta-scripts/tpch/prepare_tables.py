@@ -86,7 +86,7 @@ COPY supplier FROM '{data_folder}/supplier.tbl' WITH (header='false',delimiter='
 data_folder = sys.argv[1]
 num_threads = sys.argv[2]
 num_slack = sys.argv[3]
-num_frags = num_threads * num_slack
+num_frags = int(num_threads) * int(num_slack)
 
 
 def get_line_count(filename):

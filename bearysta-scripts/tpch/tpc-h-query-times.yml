@@ -35,7 +35,9 @@ axis:
 
 series:
 #    - branch
+    - subfr
     - numa
+    - columnar
 
 values:
 #    - GB_s

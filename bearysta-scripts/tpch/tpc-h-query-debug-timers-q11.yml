@@ -35,6 +35,8 @@ axis:
 
 series:
      - scale
+     - subfr
+     - columnar
 #    - branch
 #    - numa
 
