@@ -11,24 +11,40 @@
 variables:
     batch: [1, 2, 3]
     affinity:
+        - 'all'
         - '--N0-only --no-ht all'
         - '--N0-only --no-ht half'
         - '--N0-only --no-ht /4'
-    rows:
-#        - 20
-        - 200
     numa:
         - '-a'
         #- '-p 0'
         #- '-i 0,1'
     slack:
-        - 8
-        - 16
+        - 1
+        - 2
+        #- 8
+        #- 16
+    columnar:
+        - true
+        - false
+    subfr:
+        - true
+        - false
+    initgr:
+        - true
+        - false
+    query:
+        - q1
+        - q2
+        - q3
+        - q4
+    env:
+        - LD_PRELOAD=/localdisk/amalakho/miniconda3/envs/omnisci-dev/lib/libtbbmalloc_proxy.so.2 TBB_MALLOC_USE_HUGE_PAGES=1
+        - LD_PRELOAD=/localdisk/amalakho/miniconda3/envs/omnisci-dev/lib/libtbbmalloc_proxy.so.2
+        - ''
     OMP_NUM_THREADS: $(../list_cpu_affinity.py --total $affinity)
     cpus: $(../list_cpu_affinity.py $affinity)
-    frags: $(echo $rows*1000000/$OMP_NUM_THREADS/$slack | bc -q)
-    omnisci_server: '../../../omniscidb/build/bin/omnisci_server'
+    build: 'build'
 
 commands:
-    taxi: ./run-omnisci.sh --enable-debug-timer --enable-modern-thread-pool=true
-    #directly it is: numactl $numa -C $cpus ../../build/bin/omnisci_server --config omnisci-bench-nyct-$rows.conf 2>&1
+    taxi: ./run-nyct.sh --enable-modern-thread-pool=true --enable-columnar-output=$columnar --enable-subfragments=$subfr --optimize-row-init=$initgr

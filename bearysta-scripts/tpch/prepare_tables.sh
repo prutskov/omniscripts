@@ -47,10 +47,6 @@ if [ ! -d "gen_$1" ]; then
     popd
 fi
 
-for f in gen_$1/*.tbl; do
-    echo "$f lines count: $(wc -l < $f)"
-done;
-
 fragments=$(($2*$3))
 if [ ! -d "gen_$1/data-$fragments" ]; then
     mkdir -p gen_$1/data-$fragments && ../../../omniscidb/build/bin/initdb --data gen_$1/data-$fragments
