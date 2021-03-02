@@ -5,4 +5,4 @@ CREATE TABLE trips_reduced (
     trip_distance           DECIMAL(14,2),
     total_amount            DECIMAL(14,2),
     cab_type                VARCHAR(6) ENCODING DICT
-) WITH (FRAGMENT_SIZE=20000000);
+) WITH (fragment_size=20000000);
