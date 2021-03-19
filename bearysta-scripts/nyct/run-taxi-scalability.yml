@@ -16,24 +16,11 @@ variables:
         - '--N0-only --no-ht all'
         - '--N0-only --no-ht half'
         - '--N0-only --no-ht /4'
+        - '--N0-only --no-ht /4'
     numa:
         - '-a'
         #- '-p 0'
         #- '-i 0,1'
-    slack:
-        - 1
-        - 2
-        #- 8
-        #- 16
-    columnar:
-        - true
-        - false
-    subfr:
-        - true
-        - false
-    initgr:
-        - true
-        - false
     query:
         - q1
         - q2
@@ -45,7 +32,7 @@ variables:
         - ''
     OMP_NUM_THREADS: $(../list_cpu_affinity.py --total $affinity)
     cpus: $(../list_cpu_affinity.py $affinity)
-    build: 'build'
 
 commands:
-    taxi: ./run-nyct.sh --enable-modern-thread-pool=true --enable-columnar-output=$columnar --enable-subfragments=$subfr --optimize-row-init=$initgr
+    master: env build=build-master ./run-nyct.sh --enable-modern-thread-pool=true --enable-subfragments=true --optimize-row-init=true
+    scalability: env build=build-scalability ./run-nyct.sh

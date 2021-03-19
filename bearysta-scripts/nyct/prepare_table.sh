@@ -1,10 +1,15 @@
 #!/bin/bash
 all_files=`ls /localdisk/taxi_data_reduced/trips_reduced_*.csv.gz`
 set -xe
-slack=$1
-threads=$2
-omnisci_server=../../../omniscidb/$build/bin/omnisci_server
-fragments=$(($slack*$threads))
+if [ -z "$1" ]; then
+  fragments="default"
+else
+  slack=$1
+  threads=$2
+  fragments=$(($slack*$threads))
+fi
+
+omnisci_server=../../../omniscidb/${build:-build}/bin/omnisci_server
 
 if [ ! -d "data-$fragments" ]; then
     mkdir -p data-$fragments && ../../../omniscidb/build/bin/initdb --data data-$fragments
@@ -23,11 +28,16 @@ if [ ! -d "data-$fragments" ]; then
     done
     echo "}" >>tmp1.sql
     echo Total lines: $lines
-    frags=$(($lines/$fragments))
+
 
     echo "USER admin omnisci {" >tmp.sql
     cat init.sql >>tmp.sql
-    sed -ri -e "s/fragment_size=[0-9]*/fragment_size=$frags/" tmp.sql
+    if [ -z "$1" ]; then
+      sed -ri -e "s/fragment_size=[0-9]*//;s/WITH ?\(\)//" tmp.sql
+    else
+      frags=$(($lines/$fragments))
+      sed -ri -e "s/fragment_size=[0-9]*/fragment_size=$frags/" tmp.sql
+    fi
     cat tmp1.sql >> tmp.sql
     $omnisci_server --db-query-list=tmp.sql --exit-after-warmup --data data-$fragments
     rm tmp.sql tmp1.sql

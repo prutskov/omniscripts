@@ -11,6 +11,7 @@
 variables:
     batch: [1, 2, 3]
     affinity:
+        - 'all'
         - '--no-ht all'
         - '--N0-only --no-ht all'
         - '--N0-only --no-ht half'
@@ -22,29 +23,31 @@ variables:
     slack:
         - 1
         - 2
-        - 4
-        - 8
+        #- 4
+        #- 8
         - 16
     scale:
         - 1
-        - 5
-        - 10
-        - 20
+        #- 5
+        #- 10
+        #- 20
         - 50
     query:
         - q1
         - q5
         - q11
-    subfr:
-        - true
-        - false
+    #subfr:
+    #    - true
+    #    - false
     columnar:
         - true
         - false
     OMP_NUM_THREADS: $(../list_cpu_affinity.py --total $affinity)
     cpus: $(../list_cpu_affinity.py $affinity)
-    omnisci_server:
-        - '../../../omniscidb/build/bin/omnisci_server'
+    build:
+        - build-bestinit
+        - build-ITTmaster
 
 commands:
-    tpch: ./run-tpc-h.sh --enable-debug-timer --enable-modern-thread-pool=true --max-num-threads=$OMP_NUM_THREADS --enable-subfragments=$subfr --enable-columnar-output=$columnar
+    #tpch: ./run-tpc-h.sh --enable-debug-timer --enable-modern-thread-pool=true --max-num-threads=$OMP_NUM_THREADS --enable-subfragments=$subfr --enable-columnar-output=$columnar
+    tpch: ./run-tpc-h.sh --enable-debug-timer --enable-modern-thread-pool=true --max-num-threads=$OMP_NUM_THREADS --enable-columnar-output=$columnar
