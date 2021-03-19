@@ -34,5 +34,5 @@ variables:
     cpus: $(../list_cpu_affinity.py $affinity)
 
 commands:
-    master: env build=build-master ./run-nyct.sh --enable-modern-thread-pool=true --enable-subfragments=true --optimize-row-init=true
-    scalability: env build=build-scalability ./run-nyct.sh
+    master: env build=build-master ./run-nyct.sh --enable-modern-thread-pool=true --enable-subfragments=true --optimize-row-init=true --cleanup-join-hash-table-cache
+    scalability: env build=build-scalability ./run-nyct.sh --cleanup-join-hash-table-cache
