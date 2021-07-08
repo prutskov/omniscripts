@@ -1,29 +1,21 @@
 import json
-import sys
-import os
 import itertools as it
 import math
 import argparse
-import mysql.connector
+from utils_base_env import add_mysql_arguments
 
-
-def get_db_parameters():
-    return tuple()
-
-# Reporting DB data
-db_server, db_port, db_user, db_pass, db_name = get_db_parameters()
-
-db_table = "25_modin_funcs"
-
-results = []
 
 class DbReport:
     """Initialize and submit reports to MySQL database"""
 
-    def __init__(self, database, table_name, persistent_values=None):
+    def __init__(self, db_ops, table_name, persistent_values=None):
+        import mysql.connector
+
+        db = mysql.connector.connect(**db_ops)
+        self._database = db
+
         self.all_fields = {}
         self._table_name = table_name
-        self._database = database
 
         if persistent_values:
             self.all_fields.update(persistent_values)
@@ -62,7 +54,7 @@ class DbReport:
         self._database.commit()
 
 
-if __name__ == "__main__":
+def get_cmd_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--result-path",
@@ -72,7 +64,16 @@ if __name__ == "__main__":
         default=None,
         help="File path of ASV result to report.",
     )
-    result_path = parser.parse_args().result_path
+    add_mysql_arguments(parser)
+    parsed_args = parser.parse_args()
+    db_ops = {}
+    for arg in ("db_server", "db_port", "db_user", "db_pass", "db_name"):
+        db_ops[arg] = getattr(parsed_args, arg)
+    return parsed_args.result_path, db_ops
+
+
+def parse_asv_results(result_path):
+    results = []
 
     with open(result_path, "r") as f:
         res = json.load(f)
@@ -92,9 +93,7 @@ if __name__ == "__main__":
         bench_result = res["results"][benchmark]
         nested_lists = isinstance(bench_result, dict)
         params = (
-            res["results"][benchmark]["params"]
-            if nested_lists
-            else res["results"][benchmark][1]
+            res["results"][benchmark]["params"] if nested_lists else res["results"][benchmark][1]
         )
         combinations = list(it.product(*params))
         test = ["_".join([str(y) for y in x]) for x in combinations]
@@ -119,20 +118,22 @@ if __name__ == "__main__":
             )
             counter += 1
 
-    db = mysql.connector.connect(
-        host=db_server,
-        port=db_port,
-        user=db_user,
-        passwd=db_pass,
-        db=db_name,
-    )
+    return reporting_init_fields, results
+
+
+def main():
+    result_path, db_ops = get_cmd_args()
+    reporting_init_fields, results = parse_asv_results(result_path)
+    db_table = "25_modin_funcs"
 
     db_reporter = DbReport(
-        db,
+        db_ops,
         db_table,
         reporting_init_fields,
     )
-
     db_reporter.submit(results)
-
     print("Data was successfully reported!")
+
+
+if __name__ == "__main__":
+    main()
