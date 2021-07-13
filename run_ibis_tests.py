@@ -323,7 +323,7 @@ def main():
         help="Extends functionality of H2O benchmark by adding 'chk' functions and verbose local reporting of results",
     )
     # MySQL database parameters
-    add_mysql_arguments(mysql)
+    add_mysql_arguments(mysql, etl_ml_tables=True)
     # Additional information
     commits.add_argument(
         "-commit_omnisci",

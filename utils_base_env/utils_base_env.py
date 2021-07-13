@@ -73,7 +73,7 @@ class KeyValueListParser(argparse.Action):
         setattr(namespace, self.dest, kwargs)
 
 
-def add_mysql_arguments(parser):
+def add_mysql_arguments(parser, etl_ml_tables=False):
     parser.add_argument(
         "-db_server",
         dest="db_server",
@@ -106,13 +106,18 @@ def add_mysql_arguments(parser):
         default="omniscidb",
         help="MySQL database to use to store benchmark results.",
     )
-    parser.add_argument(
-        "-db_table_etl",
-        dest="db_table_etl",
-        help="Table to use to store ETL results for this benchmark.",
-    )
-    parser.add_argument(
-        "-db_table_ml",
-        dest="db_table_ml",
-        help="Table to use to store ML results for this benchmark.",
-    )
+    if etl_ml_tables:
+        parser.add_argument(
+            "-db_table_etl",
+            dest="db_table_etl",
+            help="Table to use to store ETL results for this benchmark.",
+        )
+        parser.add_argument(
+            "-db_table_ml",
+            dest="db_table_ml",
+            help="Table to use to store ML results for this benchmark.",
+        )
+    else:
+        parser.add_argument(
+            "-db-table", dest="db_table", help="Table to use to store results for this benchmark."
+        )
