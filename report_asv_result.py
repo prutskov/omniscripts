@@ -102,9 +102,10 @@ def parse_asv_results(result_path):
             res["results"][benchmark]["params"] if nested_lists else res["results"][benchmark][1]
         )
         combinations = list(it.product(*params))
-        test = ["_".join([str(y) for y in x]) for x in combinations]
+        # parameters `combinations` represented as strings for each of benchmark runs
+        combinations_str = ["_".join([str(param) for param in comb]) for comb in combinations]
         result_field = bench_result["result"] if nested_lists else bench_result[0]
-        for comb in test:
+        for comb in combinations_str:
             comb_result = (
                 result_field[counter]
                 if result_field is not None and result_field[counter] is not None
