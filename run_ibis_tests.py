@@ -283,7 +283,7 @@ def main():
     )
     benchmark.add_argument(
         "-pandas_mode",
-        choices=["Pandas", "Modin_on_ray", "Modin_on_dask", "Modin_on_python", "Modin_on_omnisci"],
+        choices=["Pandas", "Modin_on_ray", "Modin_on_scaleout", "Modin_on_dask", "Modin_on_python", "Modin_on_omnisci"],
         default="Pandas",
         help="Specifies which version of Pandas to use: "
         "plain Pandas, Modin runing on Ray or on Dask",
@@ -687,7 +687,10 @@ def main():
 
                 except KeyError:
                     pass
-
+            benchmark_cmd = ["mpiexec"] + ["-n"] +  ["1"] \
+                         + ["-host"] + ["localhost"] + \
+                         benchmark_cmd + \
+                         [":"] + ["-n"] + ["8"] + ["-host"] + ["localhost"] + ["-wdir"] + ["/tmp/mpi-py"] + ["python"] + ["$HOME/scaleout/backends/mpi/core/worker.py"]
             print(benchmark_cmd)
 
             conda_env.run(benchmark_cmd)

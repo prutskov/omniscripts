@@ -63,6 +63,7 @@ def import_pandas_into_module_namespace(namespace, mode, ray_tmpdir=None, ray_me
                 ray_memory = 200 * 1024 * 1024 * 1024
             if not ray.is_initialized():
                 ray.init(
+                    num_cpus=8,
                     _plasma_directory=ray_tmpdir,
                     _memory=ray_memory,
                     object_store_memory=ray_memory,
@@ -71,8 +72,13 @@ def import_pandas_into_module_namespace(namespace, mode, ray_tmpdir=None, ray_me
             print(
                 f"Pandas backend: Modin on Ray with tmp directory {ray_tmpdir} and memory {ray_memory}"
             )
+        elif mode == "Modin_on_scaleout":
+            print("Pandas backend: Modin on Scaleout")
         elif mode == "Modin_on_dask":
             os.environ["MODIN_ENGINE"] = "dask"
+            import modin.config
+            from distributed import Client
+            client = Client(n_workers=8)
             print("Pandas backend: Modin on Dask")
         elif mode == "Modin_on_python":
             os.environ["MODIN_ENGINE"] = "python"

@@ -4,6 +4,7 @@ import numpy as np
 from sklearn import config_context
 import warnings
 from timeit import default_timer as timer
+import logging
 
 from utils import (
     check_fragments_size,
@@ -26,10 +27,19 @@ warnings.filterwarnings("ignore")
 # Dataset link
 # https://rapidsai-data.s3.us-east-2.amazonaws.com/datasets/ipums_education2income_1970-2010.csv.gz
 
+# Logger configuration
+f_format = logging.Formatter('%(message)s')
+f_handler = logging.FileHandler('printer.log', delay=True)
+f_handler.setFormatter(f_format)
+
+e_logger = logging.getLogger("printer")
+e_logger.setLevel(logging.DEBUG)
+e_logger.addHandler(f_handler)
 
 def etl_pandas(filename, columns_names, columns_types, etl_keys, pandas_mode):
     etl_times = {key: 0.0 for key in etl_keys}
 
+    e_logger.debug("Start")
     t0 = timer()
     if pandas_mode == "Modin_on_omnisci":
         df = load_data_modin_on_omnisci(
@@ -50,6 +60,7 @@ def etl_pandas(filename, columns_names, columns_types, etl_keys, pandas_mode):
             pd=run_benchmark.__globals__["pd"],
         )
     etl_times["t_readcsv"] = timer() - t0
+    e_logger.debug(f'\nt_readcsv = {etl_times["t_readcsv"]} s')
 
     t_etl_start = timer()
 
@@ -101,7 +112,11 @@ def etl_pandas(filename, columns_names, columns_types, etl_keys, pandas_mode):
     X.shape
 
     etl_times["t_etl"] = timer() - t_etl_start
+    e_logger.debug(f't_etl = {etl_times["t_etl"]} s')
+    e_logger.debug(f"DataFrame shape: {X.shape}")
     print("DataFrame shape:", X.shape)
+    import scaleout as scl
+    scl.shutdown()
 
     return df, X, y, etl_times
 
