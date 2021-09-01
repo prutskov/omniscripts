@@ -139,7 +139,7 @@ def main():
         help="Do not run machine learning benchmark, only ETL part",
     )
     optional.add_argument(
-        "-modin_xgb",
+        "-use_modin_xgb",
         default=None,
         type=str_arg_to_bool,
         help="Use Modin XGBoost for ML part or not",
@@ -331,7 +331,7 @@ def main():
             "data_file": args.data_file,
             "dfiles_num": args.dfiles_num,
             "no_ml": args.no_ml,
-            "modin_xgb": args.modin_xgb,
+            "use_modin_xgb": args.use_modin_xgb,
             "no_ibis": args.no_ibis,
             "optimizer": args.optimizer,
             "pandas_mode": args.pandas_mode,

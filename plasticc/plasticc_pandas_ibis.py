@@ -5,7 +5,6 @@ from timeit import default_timer as timer
 import numpy as np
 import pandas
 from sklearn.preprocessing import LabelEncoder
-# import xgboost as xgb
 
 from utils import (
     check_fragments_size,
@@ -685,7 +684,7 @@ def run_benchmark(parameters):
 
         if not parameters["no_ml"]:
             print("using ml with dataframes from Pandas")
-            ml_times = ml(train_final, test_final, ml_keys, use_modin_xgb=parameters["modin_xgb"])
+            ml_times = ml(train_final, test_final, ml_keys, use_modin_xgb=parameters["use_modin_xgb"])
             print_results(results=ml_times, backend=parameters["pandas_mode"], unit="s")
             ml_times["Backend"] = parameters["pandas_mode"]
 
