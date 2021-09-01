@@ -142,7 +142,7 @@ def main():
         "-use_modin_xgb",
         default=None,
         type=str_arg_to_bool,
-        help="Use Modin XGBoost for ML part or not",
+        help="Use Modin XGBoost for ML part or not, relevant only for Plasticc",
     )
     optional.add_argument(
         "-gpu_memory",
