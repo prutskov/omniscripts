@@ -408,6 +408,7 @@ def split(X, y, test_size=0.1, stratify=None, random_state=None, optimizer="inte
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, stratify=stratify, random_state=random_state
     )
+    print(f'types: X_train{type(X_train)}, X_test{type(X_test)}, y_train{type(y_train)}, y_test{type(y_test)}')
     split_time = timer() - t0
 
     return (X_train, y_train, X_test, y_test), split_time

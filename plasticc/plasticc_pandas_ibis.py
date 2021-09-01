@@ -7,6 +7,7 @@ import pandas
 from sklearn.preprocessing import LabelEncoder
 import xgboost as xgb
 
+
 from utils import (
     check_fragments_size,
     check_support,
@@ -501,7 +502,8 @@ def xgb_multi_weighted_logloss(y_predicted, y_true, classes, class_weights):
     return "wloss", loss
 
 
-def ml(train_final, test_final, ml_keys):
+def ml(train_final, test_final, ml_keys, use_modin_xgb=False):
+    print(f'use_modin_xgb: {use_modin_xgb}')
     ml_times = {key: 0.0 for key in ml_keys}
 
     (
@@ -509,13 +511,23 @@ def ml(train_final, test_final, ml_keys):
         ml_times["t_train_test_split"],
     ) = split_step(train_final, test_final)
 
+    if use_modin_xgb:
+        import modin.experimental.xgboost as xgb
+        import modin.pandas as pd
+        X_train = pd.DataFrame(X_train)
+        y_train = pd.Series(y_train)
+        X_test = pd.DataFrame(X_test)
+        y_test = pd.Series(y_test)
+        Xt = pd.DataFrame(Xt)
+    else:
+        import xgboost as xgb
     cpu_params = {
         "objective": "multi:softprob",
+        "eval_metric": "mlogloss",
         "tree_method": "hist",
         "nthread": 16,
         "num_class": 14,
         "max_depth": 7,
-        "silent": 1,
         "subsample": 0.7,
         "colsample_bytree": 0.7,
     }
@@ -545,6 +557,10 @@ def ml(train_final, test_final, ml_keys):
     t0 = timer()
     yp = clf.predict(dvalid)
     ml_times["t_infer"] += timer() - t0
+
+    if use_modin_xgb:
+        y_test = y_test.values
+        yp = yp.values
 
     cpu_loss = multi_weighted_logloss(y_test, yp, classes, class_weights)
 
@@ -671,7 +687,7 @@ def run_benchmark(parameters):
 
         if not parameters["no_ml"]:
             print("using ml with dataframes from Pandas")
-            ml_times = ml(train_final, test_final, ml_keys)
+            ml_times = ml(train_final, test_final, ml_keys, use_modin_xgb=parameters["modin_xgb"])
             print_results(results=ml_times, backend=parameters["pandas_mode"], unit="s")
             ml_times["Backend"] = parameters["pandas_mode"]
 
