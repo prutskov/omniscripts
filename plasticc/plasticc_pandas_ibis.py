@@ -511,6 +511,7 @@ def ml(train_final, test_final, ml_keys, use_modin_xgb=False):
     if use_modin_xgb:
         import modin.experimental.xgboost as xgb
         import modin.pandas as pd
+
         X_train = pd.DataFrame(X_train)
         y_train = pd.Series(y_train)
         X_test = pd.DataFrame(X_test)
@@ -684,7 +685,9 @@ def run_benchmark(parameters):
 
         if not parameters["no_ml"]:
             print("using ml with dataframes from Pandas")
-            ml_times = ml(train_final, test_final, ml_keys, use_modin_xgb=parameters["use_modin_xgb"])
+            ml_times = ml(
+                train_final, test_final, ml_keys, use_modin_xgb=parameters["use_modin_xgb"]
+            )
             print_results(results=ml_times, backend=parameters["pandas_mode"], unit="s")
             ml_times["Backend"] = parameters["pandas_mode"]
 
