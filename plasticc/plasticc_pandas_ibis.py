@@ -5,8 +5,7 @@ from timeit import default_timer as timer
 import numpy as np
 import pandas
 from sklearn.preprocessing import LabelEncoder
-import xgboost as xgb
-
+# import xgboost as xgb
 
 from utils import (
     check_fragments_size,
@@ -503,7 +502,6 @@ def xgb_multi_weighted_logloss(y_predicted, y_true, classes, class_weights):
 
 
 def ml(train_final, test_final, ml_keys, use_modin_xgb=False):
-    print(f'use_modin_xgb: {use_modin_xgb}')
     ml_times = {key: 0.0 for key in ml_keys}
 
     (
@@ -523,11 +521,11 @@ def ml(train_final, test_final, ml_keys, use_modin_xgb=False):
         import xgboost as xgb
     cpu_params = {
         "objective": "multi:softprob",
-        "eval_metric": "mlogloss",
         "tree_method": "hist",
         "nthread": 16,
         "num_class": 14,
         "max_depth": 7,
+        "silent": 1,
         "subsample": 0.7,
         "colsample_bytree": 0.7,
     }
