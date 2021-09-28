@@ -309,9 +309,9 @@ def main():
     )
     benchmark.add_argument(
         "-use_modin_xgb",
-        default=None,
+        default=False,
         type=str_arg_to_bool,
-        help="Use Modin XGBoost for ML part or not, relevant only for Plasticc",
+        help="Whether to use Modin XGBoost for ML part, relevant for Plasticc benchmark only",
     )
     optional.add_argument(
         "-gpu_memory",
