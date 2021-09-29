@@ -690,6 +690,11 @@ def run_benchmark(parameters):
             )
             print_results(results=ml_times, backend=parameters["pandas_mode"], unit="s")
             ml_times["Backend"] = parameters["pandas_mode"]
+            ml_times["Backend"] = (
+                parameters["pandas_mode"]
+                if not parameters["use_modin_xgb"]
+                else parameters["pandas_mode"] + "_modin_xgb"
+            )
 
     if parameters["validation"] and parameters["import_mode"] != "pandas":
         print(
